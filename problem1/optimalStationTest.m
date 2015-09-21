@@ -2,18 +2,20 @@ clear
 readData
 
 load brakingCurve.mat
-As = 6;
-At = 8;
-Time = 220;
 % As = 6;
-% At = 7;
-% Time = 110;
+% At = 8;
+% Time = 220;
+% dwellTime = 40;
+As = 6;
+At = 7;
+Time = 110;
+dwellTime = [];
 % As = 1;
 % At = 14;
 % Time = 2086 - 75/2*12; % 1636
 tic
 deltaE = 0.1 * 1000 * 3600; % deltaE Îª 0.1 Ç§ÍßÊ±
-[S,V,T,F,calS,calDist,Acce,totalT,sectionT,totalE]=optimalStationAlgo( As,At,Time,speedLimit,gradient,...
+[S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE]=optimalStationAlgo( As,At,dwellTime,Time,speedLimit,gradient,...
     curvature,brakingCurveS,brakingCurveV,curveTerminal,stationP,deltaE);
 toc
 figure

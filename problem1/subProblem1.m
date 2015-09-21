@@ -6,10 +6,11 @@ load brakingCurve.mat
 As = 6;
 At = 7;
 targetTime = 110;
+dwellTime = [];
 
 tic
 deltaE = 0.03 * 1000 * 3600; % deltaE Îª 0.1 Ç§ÍßÊ±
-[S,V,T,F,calS,calDist,Acce,totalT,sectionT,totalE]=optimalStationAlgo( As,At,targetTime,speedLimit,gradient,...
+[S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE]=optimalStationAlgo( As,At,dwellTime,targetTime,speedLimit,gradient,...
     curvature,brakingCurveS,brakingCurveV,curveTerminal,stationP,deltaE);
 toc
 

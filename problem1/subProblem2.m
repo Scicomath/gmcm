@@ -4,12 +4,12 @@ readData
 load brakingCurve.mat
 
 As = 6;
-At = 7;
-targetTime = 110;
-
+At = 8;
+targetTime = 220;
+dwellTime = 40;
 tic
 deltaE = 0.03 * 1000 * 3600; % deltaE Îª 0.1 Ç§ÍßÊ±
-[S,V,T,F,calS,calDist,Acce,totalT,sectionT,totalE]=optimalStationAlgo( As,At,targetTime,speedLimit,gradient,...
+[S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE]=optimalStationAlgo( As,At,dwellTime,targetTime,speedLimit,gradient,...
     curvature,brakingCurveS,brakingCurveV,curveTerminal,stationP,deltaE);
 toc
 
@@ -45,7 +45,7 @@ resultTable(1:N,8) = secondF;
 resultTable(1:N,9) = secondF .* secondV;
 
 temp = (stationP(As) - stationP(At)) -  resultTable(end-1,6);
-resultTable(end,:) = [targetTime,0,0,0,resultTable(end-1,5)+temp,resultTable(end-1,6)+temp,resultTable(end,7),0,0];
+resultTable(end,:) = [targetTime+sum(dwellTime),0,0,0,resultTable(end-1,5)+temp,resultTable(end-1,6)+temp,resultTable(end,7),0,0];
 
 
 figure
