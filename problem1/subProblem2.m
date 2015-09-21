@@ -48,6 +48,12 @@ temp = (stationP(As) - stationP(At)) -  resultTable(end-1,6);
 resultTable(end,:) = [targetTime+sum(dwellTime),0,0,0,resultTable(end-1,5)+temp,resultTable(end-1,6)+temp,resultTable(end,7),0,0];
 
 
+Timestr = cell(N+1,1);
+for i = 1:N+1
+    Timestr{i} = second2Time( i - 1 );
+end
+
+
 figure
 plot(S,V*3.6)
 set(gca,'XDir','reverse')
