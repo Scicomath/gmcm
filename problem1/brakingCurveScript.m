@@ -1,8 +1,9 @@
 clear
-main
+readData
 
 brakingCurveV = [];
 brakingCurveS = [];
+brakingCurveEreg = [];
 curveTerminal = [];
 figure
 hold on
@@ -13,10 +14,11 @@ for i = 2:size(speedLimit,1)
     s1 = speedLimit(i,1);
     currentLimitSpeed = speedLimit(i,2);
     if currentLimitSpeed > endSpeed
-        [ tempV,tempS ] = brakingCurveFun( s0, s1, endSpeed, gradient, curvature );
+        [ tempV,tempS,tempEreg ] = brakingCurveFun( s0, s1, endSpeed, gradient, curvature );
         plot(tempS,tempV*3.6)
         brakingCurveV = [brakingCurveV,tempV];
         brakingCurveS = [brakingCurveS,tempS];
+        brakingCurveEreg = [brakingCurveEreg,tempEreg];
         curveTerminal = [curveTerminal;s0, s1];
     end
 end
@@ -37,5 +39,5 @@ set(gca,'XDir','reverse')
 %line([stationP(6),stationP(6)],[ymin,ymax],'LineStyle',':')
 %line([stationP(7),stationP(7)],[ymin,ymax],'LineStyle',':')
 
-save('brakingCurve.mat','brakingCurveS','brakingCurveV','curveTerminal')
+save('brakingCurve.mat','brakingCurveS','brakingCurveV','curveTerminal','brakingCurveEreg')
 

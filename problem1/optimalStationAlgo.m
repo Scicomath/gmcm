@@ -1,4 +1,4 @@
-function  [S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE]=optimalStationAlgo( As,At,dwellTime,targetT,speedLimit,gradient,...
+function  [S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE,brakingTerminal]=optimalStationAlgo( As,At,dwellTime,targetT,speedLimit,gradient,...
     curvature,brakingCurveS,brakingCurveV,curveTerminal,stationP,deltaE)
 %optimalStationAlgo 车站之间控制优化算法
 %   输入参数：
@@ -13,11 +13,13 @@ function  [S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE]=optimalStationAlgo(
 A = As:At;              % 起始车站到终点车站的向量
 N = length(A) - 1;      % 站间区间的个数
 
-% 区间信息初始化
+% 区间数据初始化
 section.S = cell(0);    % 区间的公里标向量
 section.V = cell(0);    % 区间的速度向量
 section.T = cell(0);    % 区间的时间向量
 section.F = cell(0);    % 区间的牵引力向量
+
+section.braking = cell(0); % 区间制动区间
 
 section.EndS = [];      % 区间的端点公里标
 section.EndV = [];      % 区间的端点速度
@@ -39,6 +41,7 @@ for i = 1:N
     section.V = [section.V;tempSection.V];
     section.T = [section.T;tempSection.T];
     section.F = [section.F;tempSection.F];
+    section.braking = [section.braking;tempSection.braking];
     section.EndS = [section.EndS;tempSection.EndS];
     section.EndV = [section.EndV;tempSection.EndV];
     section.UsedT = [section.UsedT;tempSection.usedT];
@@ -68,61 +71,22 @@ while totalT>targetT
     firstFlag = 0;                          % 第一次循环后，firstFlag为0
     [~,i]=max(saveTimePerE);                % 选取单位能量节省时间最多的区间
     % 对选中的区间进行优化
-    [ section.S{i},section.V{i},section.T{i},section.F{i},section.UsedT(i),tempSectionLeftE ] = optimalSectionAlgo( section.EndS(i,1),...
+    [ section.S{i},section.V{i},section.T{i},section.F{i},section.UsedT(i),tempSectionLeftE,section.braking{i} ] = optimalSectionAlgo( section.EndS(i,1),...
         section.EndS(i,2),section.EndV(i,1),section.EndV(i,2),section.E(i)+deltaE,section.SpeedLimit(i),gradient,curvature );
     section.E(i) = section.E(i) + deltaE - tempSectionLeftE;
     % 重新计算路程总时间
     totalT = sum(section.UsedT);
-
+    disp(totalT)
 end
 
 interSta =section2interSta(section,interStaSectionNum);
 
-[S,V,T,F,calS,calDist,Acce,totalT,totalE] = interSta2all(interSta,dwellTime,A,stationP);
-% 
-% interstation.S = cell(N,1);
-% currentSection = 0;
-% for i = 1:N
-%     tempIndex = (currentSection+1):(currentSection+interstation.SectionNum(i));
-%     interstation.S{i} = cat(2,sectionS{tempIndex});
-%     interstation.F{i} = cat(2,sectionF{tempIndex});
-%     interstation.calS{i} = -(interstation.S{i} - interstation.S{i}(1));
-%     
-%     ;... % 有待继续编写
-%     currentSection = tempIndex(end);
-% end
-% 
-% 
-% S = cat(2,sectionS{:});
-% F = cat(2,sectionF{:});
-% % 计算公里标： 到起点的距离
-% calS = -(S - S(1));
-% % 计算距离： 到上一站的距离
-% calDist = [];
-% for i = 1:N
-%     if i==N
-%         tempS = S(S<=stationP(A(i))&S>=stationP(A(i+1)));
-%     else
-%         tempS = S(S<=stationP(A(i))&S>stationP(A(i+1)));
-%     end
-%     calDist = [calDist,-(tempS - tempS(1))];
-% end
-% 
-% 
-% T = section.T{1};
-% for i = 2:sectionNum
-%     T = [T,section.T{i} + T(end)];
-% end
-% 
-% V = cat(2,section.V{:});
-% totalE = sum(sectionE);
-% 
-% Acce = [diff(V.^2) ./ (-2*diff(S)),0];
+[S,V,T,F,calS,calDist,Acce,totalT,totalE,brakingTerminal] = interSta2all(interSta,dwellTime,A,stationP);
 
 
 end
 
-function [S,V,T,F,calS,calDist,Acce,totalT,totalE] = interSta2all(interSta,dwellTime,A,stationP)
+function [S,V,T,F,calS,calDist,Acce,totalT,totalE,brakingTerminal] = interSta2all(interSta,dwellTime,A,stationP)
 %interSta2all 将站间数据转化为全程数据
 N = length(interSta);
 if N == 1
@@ -132,12 +96,14 @@ if N == 1
     F = interSta{1}.F;
     totalE = interSta{1}.E;
     Acce = [diff(interSta{1}.V.^2) ./ (-2*diff(interSta{1}.S)),0];
+    brakingTerminal = interSta{1}.braking;
 else
     S = [];
     V = [];
     T = [];
     F = [];
     Acce = [];
+    brakingTerminal = [];
     totalE = 0;
     for i = 1:N-1
         S = [S,interSta{i}.S];
@@ -149,12 +115,14 @@ else
         F = [F,interSta{i}.F];
         F = [F,0,0];
         totalE = totalE + interSta{i}.E;
+        brakingTerminal = [brakingTerminal;interSta{i}.braking];
     end
     S = [S,interSta{end}.S];
     Acce = [Acce,[diff(interSta{end}.V.^2) ./ (-2*diff(interSta{end}.S)),0]];
     V = [V,interSta{end}.V];
     F = [F,interSta{end}.F];
     totalE = totalE + interSta{end}.E;
+    brakingTerminal = [brakingTerminal;interSta{end}.braking];
     
     T = [T,interSta{1}.T];
     T = [T,T(end)+0.01,T(end)+dwellTime(1)];
@@ -223,6 +191,8 @@ mergeSec.EndS = [section.EndS(mergeVec(1),1),section.EndS(mergeVec(end),2)];
 mergeSec.EndV = [section.EndV(mergeVec(1),1),section.EndV(mergeVec(end),2)];
 mergeSec.E = sum(section.E(mergeVec)); % 区间的能量消耗
 mergeSec.UsedT = sum(section.UsedT(mergeVec)); % 区间的花费时间
+
+mergeSec.braking = cat(1,section.braking{mergeVec});
 
 
 end

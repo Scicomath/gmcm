@@ -1,4 +1,4 @@
-function [ S,V,T,F,totalT,E ] = optimalSectionAlgo( s0,s1,v0,vt,E,speedLimit,gradient,curvature )
+function [ S,V,T,F,totalT,E,brakingTerminal ] = optimalSectionAlgo( s0,s1,v0,vt,E,speedLimit,gradient,curvature )
 %optimalSectionAlgo 区间最优控制算法
 %   输入参数：
 %       s0 --- 初始公里标
@@ -21,6 +21,7 @@ L = 10000;
 S = linspace(s0,s1,L);
 V = zeros(size(S));
 F = zeros(size(S));
+brakingTerminal = [];
 % 终点制动曲线
 [ endBrakingCurveV,endBrakingCurveS ] = brakingCurveFun( s0, s1, vt*3.6, gradient, curvature );
 
@@ -44,6 +45,7 @@ while (i < length(V) && V(i - 1) < speedLimit && E > 0)
     V(i) = sqrt((V(i-1))^2 + 2 * a * (S(i-1) - S(i)));
     if checkMeetEndBrakingCurve(S(i),V(i),endBrakingCurveS,endBrakingCurveV)
         V(i-1:end) = interp1(endBrakingCurveS,endBrakingCurveV,S(i-1:end),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(end)];
         i = length(V);
     else
         E = E - F(i - 1) * (S(i-1) - S(i));
@@ -56,6 +58,7 @@ while (i < length(V) && E > 0)
     V(i) = V(i - 1);
     if checkMeetEndBrakingCurve(S(i),V(i),endBrakingCurveS,endBrakingCurveV)
         V(i-1:end) = interp1(endBrakingCurveS,endBrakingCurveV,S(i-1:end),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(end)];
         i = length(V);
     else
         [W] = totalResistanceFun(V(i - 1), S(i-1), gradient, curvature);
@@ -77,6 +80,7 @@ while (i <= length(V))
     E = E - F(i - 1) * (S(i-1) - S(i));
     if checkMeetEndBrakingCurve(S(i),V(i),endBrakingCurveS,endBrakingCurveV)
         V(i-1:end) = interp1(endBrakingCurveS,endBrakingCurveV,S(i-1:end),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(end)];
         i = length(V)+1;
     else
         i = i + 1;

@@ -24,11 +24,14 @@ function [ S,V,E,T,F,totalE,totalT,section ] =...
 %       section.S --- 区间的公里标向量
 %       section.V --- 区间的速度向量
 %       section.T --- 区间的时间向量
+%       section.braking --- 区间的制动区间
 
 index1 = find(speedLimit(:,3)>=s0,1);
 index2 = find(speedLimit(:,3)>s1,1);
 section.EndS = [];
 section.SpeedLimit = [];
+
+brakingTerminal = [];
 if index1 == index2
     section.EndS = [s0,s1];
     section.SpeedLimit = speedLimit(index1,2);
@@ -103,6 +106,7 @@ while (i<length(V) && V(i-1) < highSpeed)
 
     if checkMeetEndBrakingCurve(S(i),V(i),endBrakingCurveS,endBrakingCurveV)
         V(i-1:end) = interp1(endBrakingCurveS,endBrakingCurveV,S(i-1:end),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(end)]; % 记录制动区间
         E(i:end) = E(i-1);
         i = length(V);
     elseif checkMeetBrakingCurve(S(i),V(i),brakingCurveS,brakingCurveV,curveTerminal)
@@ -110,6 +114,7 @@ while (i<length(V) && V(i-1) < highSpeed)
         tempEnd = curveTerminal(index,2);
         index2 = find(S<tempEnd,1);
         V(i-1:index2) = interp1(brakingCurveS,brakingCurveV,S(i-1:index2),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(index2)]; % 记录制动区间
         E(i:index2) = E(i-1);
         i = index2 + 1;
         break
@@ -132,6 +137,7 @@ while (i<=length(V))
     E(i) = E(i-1) + F(i - 1) * (S(i-1) - S(i));
     if checkMeetEndBrakingCurve(S(i),V(i),endBrakingCurveS,endBrakingCurveV)
         V(i-1:end) = interp1(endBrakingCurveS,endBrakingCurveV,S(i-1:end),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(end)]; % 记录制动区间
         E(i:end) = E(i-1);
         i = length(V)+1;
     elseif checkMeetBrakingCurve(S(i),V(i),brakingCurveS,brakingCurveV,curveTerminal)
@@ -139,6 +145,7 @@ while (i<=length(V))
         tempEnd = curveTerminal(index,2);
         index2 = find(S<tempEnd,1);
         V(i-1:index2) = interp1(brakingCurveS,brakingCurveV,S(i-1:index2),'pchip');
+        brakingTerminal = [brakingTerminal;S(i-1),S(index2)]; % 记录制动区间
         E(i:index2) = E(i-1);
         i = index2 + 1;
     else
@@ -175,4 +182,39 @@ for i = 1:sectionNum
     section.V{i} = V(tempIndex);
     section.F{i} = F(tempIndex);
 end
+
+% 求解区间制动区间
+section.braking = cell(sectionNum,1);
+for i = 1:sectionNum
+    section.braking{i} = sectionBrakingFun(brakingTerminal,section.EndS(i,:));
+end
+
+
+end
+
+function sectionBraking=sectionBrakingFun(brakingTerminal,sectionEndS)
+
+index1 = find(brakingTerminal(:,2)<sectionEndS(1),1);
+index2 = find(brakingTerminal(:,2)<sectionEndS(2),1);
+
+if isempty(index1)
+    if isempyt(index2)
+        sectionBraking = brakingTerminal;
+    else
+        sectionBraking = brakingTerminal(1:index2,:);
+        sectionBraking(end,2) = sectionEndS(2);
+    end
+else
+    if isempty(index2)
+        sectionBraking = brakingTerminal(index1:end,:);
+        sectionBraking(1,1) = sectionEndS(1);
+    elseif index1 == index2 && sectionEndS(2)>brakingTerminal(index1,1)
+        sectionBraking = [];
+    else
+        sectionBraking = brakingTerminal(index1:index2,:);
+        sectionBraking(1,1) = sectionEndS(1);
+        sectionBraking(end,2) = sectionEndS(2);
+    end
+end
+
 end

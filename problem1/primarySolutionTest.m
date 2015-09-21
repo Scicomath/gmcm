@@ -2,12 +2,12 @@ clear
 readData
 load brakingCurve.mat
 
-% [ S,V,E,T,totalE,totalT,section ] = primarySolutionFun( stationP(6),stationP(7),speedLimit,gradient,...
-%     curvature, brakingCurveS,brakingCurveV,curveTerminal );
+[ S,V,E,T,totalE,totalT,section ] = primarySolutionFun( stationP(6),stationP(7),speedLimit,gradient,...
+    curvature, brakingCurveS,brakingCurveV,curveTerminal );
 % [ S,V,E,T,F,totalE,totalT,section ] = primarySolutionFun( 15932,13594,speedLimit,gradient,...
 %     curvature, brakingCurveS,brakingCurveV,curveTerminal );
-[ S,V,E,T,F,totalE,totalT,section ] = primarySolutionFun( stationP(7),stationP(8),speedLimit,gradient,...
-    curvature, brakingCurveS,brakingCurveV,curveTerminal );
+% [ S,V,E,T,F,totalE,totalT,section ] = primarySolutionFun( stationP(7),stationP(8),speedLimit,gradient,...
+%     curvature, brakingCurveS,brakingCurveV,curveTerminal );
 figure
 plot(S,V*3.6)
 hold on
