@@ -3,6 +3,8 @@ function [W] = totalResistanceFun(v, s, gradient, curvature)
 %   输入参数：
 %       v --- 当前速度 单位：km/h
 %       s --- 当前公里标
+%       gradient --- 坡度数据
+%       curvature --- 曲率数据
 %   输出参数：
 %       W --- 总阻力 单位：N
 

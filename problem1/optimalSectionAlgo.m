@@ -2,7 +2,7 @@ function [ S,V,T,F,totalT,E,brakingTerminal ] = optimalSectionAlgo( s0,s1,v0,vt,
 %optimalSectionAlgo 区间最优控制算法
 %   输入参数：
 %       s0 --- 初始公里标
-%       st --- 终止公里标
+%       s1 --- 终止公里标
 %       v0 --- 初始速度 单位：m/s
 %       vt --- 终止速度 单位：m/s
 %       E --- 消耗能量
@@ -13,8 +13,10 @@ function [ S,V,T,F,totalT,E,brakingTerminal ] = optimalSectionAlgo( s0,s1,v0,vt,
 %       S --- 公里标向量
 %       V --- 对应的速度向量
 %       T --- 对应的时间向量
+%       F --- 对应的牵引力向量
 %       totalT --- 消耗的总时间
 %       E --- 剩余的能量
+%       brakingTerminal --- 制动曲线端点数据
 
 M = 194295; % 列车质量 kg
 L = 10000;

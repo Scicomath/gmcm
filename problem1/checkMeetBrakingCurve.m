@@ -1,5 +1,5 @@
 function y = checkMeetBrakingCurve(s,v,BrakingCurveS,BrakingCurveV,curveTerminal)
-% 如果遇到制动曲线，则返回1，否则返回0
+%checkMeetBrakingCurve 检测是否遇到区间制动曲线，如果遇到制动曲线，则返回1，否则返回0
 index = find(curveTerminal(:,1)>s,1);
 if isempty(index)
     y = 0;

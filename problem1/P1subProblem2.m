@@ -1,3 +1,4 @@
+% 第一问第二小问脚本
 clear
 readData
 

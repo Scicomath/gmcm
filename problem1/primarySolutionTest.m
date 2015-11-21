@@ -1,3 +1,4 @@
+% primarySolutionFun≤‚ ‘Ω≈±æ
 clear
 readData
 load brakingCurve.mat

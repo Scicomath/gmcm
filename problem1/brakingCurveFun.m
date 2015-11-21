@@ -4,8 +4,12 @@ function [ V,S,Ereg ] = brakingCurveFun( s0, s1, endSpeed, gradient, curvature )
 %       s0 --- 区间起点
 %       s1 --- 区间终点
 %       endSpeed --- 最终速度 单位：km/h
+%       gradient --- 坡度数据
+%       curvature --- 曲率数据
 %   输出参数：
-%       
+%       V --- 制动的速度向量
+%       S --- 制动的公里标向量
+%       Ereg --- 制动产生的再生能量向量
 M = 194295; % 列车质量 kg
 L = 10000;
 S = linspace(s1,s0,L);

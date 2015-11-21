@@ -8,12 +8,16 @@ function [ S,V,E,T,F,totalE,totalT,section ] =...
 %       speedLimit --- 速度限制矩阵
 %       gradient --- 轨道的坡度
 %       curvature --- 轨道的曲率
+%       brakingCurveS --- 区间制动曲线公里报向量
+%       brakingCurveV --- 区间制动曲线速度向量
+%       curveTerminal --- 区间制动曲线端点数据
 %
 %   输出参数：
 %       S --- 公里标向量
 %       V --- 对应的速度向量
 %       E --- 对应的消耗能量向量
 %       T --- 对应的时间向量
+%       F --- 对应的牵引力向量
 %       totalE --- 消耗的总能量
 %       totalT --- 消耗的总时间
 %       section.EndS --- 区间的初始和终止公里标

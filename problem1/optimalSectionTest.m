@@ -1,3 +1,4 @@
+% optimalSectionTest为optimalSectionFun函数的测试脚本
 clear
 readData
 s0 = 14885;
@@ -21,7 +22,7 @@ speedLimit = 80/3.6;
 % E = 3.784572869394618e+07;
 % speedLimit = 22.222222222222221;
 
-[ S,V,T,F,totalT,E ] = optimalSectionAlgo( s0,s1,v0,vt,E,speedLimit,gradient,curvature );
+[ S,V,T,F,totalT,E,brakingTerminal ] = optimalSectionAlgo( s0,s1,v0,vt,E,speedLimit,gradient,curvature );
 disp(totalT)
 figure
 plot(S,V*3.6)

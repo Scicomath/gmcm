@@ -1,8 +1,13 @@
 function [ i,R,addedI ] = groundConditionFun( s,gradient,curvature )
-%groundConditionFun 计算位置s处的坡度和曲率
+%groundConditionFun 计算位置s处的坡度和曲率以及折算坡度
 %   输入参数：
 %       s --- 当前公里标
-%       groundCondition --- 轨道参数
+%       gradient --- 坡度数据
+%       curvature --- 曲率数据
+%   输出参数：
+%       i --- s处的坡度
+%       R --- s处的曲率
+%       addedI --- s处的折算坡度
 
 % 计算坡度
 index = find(gradient(:,3) > s,1);

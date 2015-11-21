@@ -1,3 +1,4 @@
+% 第二问脚本
 clear
 addpath ../problem1
 
@@ -12,7 +13,8 @@ dwellTime = ones(1,12)*75/2;
 
 tic
 deltaE = 0.03 * 1000 * 3600; % deltaE 为 0.1 千瓦时
-[S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE]=optimalStationAlgo( As,At,dwellTime,targetTime,speedLimit,gradient,...
+[S,V,T,F,calS,calDist,Acce,interSta,totalT,totalE,brakingTerminal]=...
+    optimalStationAlgo( As,At,dwellTime,targetTime,speedLimit,gradient,...
     curvature,brakingCurveS,brakingCurveV,curveTerminal,stationP,deltaE);
 toc
 
@@ -81,3 +83,6 @@ title('时间与计算公里标的关系')
 figure
 plot(T,F)
 title('时间与计算牵引力的关系')
+
+%save problem2stage1.mat
+
