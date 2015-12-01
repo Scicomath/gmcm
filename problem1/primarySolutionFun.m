@@ -94,8 +94,8 @@ V(1) = 0; % 初始速度为0
 % 牵引阶段
 i = 2;
 while (i<length(V) && V(i-1) < highSpeed)
-    [ Fmax ] = maxTractionFun( V(i - 1) );
-    [W] = totalResistanceFun(V(i - 1), S(i-1), gradient, curvature);
+    [ Fmax ] = maxTractionFun( V(i - 1)*3.6 );
+    [W] = totalResistanceFun(V(i - 1)*3.6, S(i-1), gradient, curvature);
     capacityMaxA = (Fmax - W) / M; % 能够达到的最大加速度
     if capacityMaxA > 1
         a = 1; % 实际加速度, 因为题目限制最大加速度不能超过1
@@ -130,7 +130,7 @@ end
 
 % 惰行与制动阶段
 while (i<=length(V))
-    [W] = totalResistanceFun(V(i - 1), S(i-1), gradient, curvature);
+    [W] = totalResistanceFun(V(i - 1)*3.6, S(i-1), gradient, curvature);
     a = -W / M; % 惰行加速度
     if a < -0.04
         a = - 0.04;
