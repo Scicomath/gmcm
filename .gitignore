@@ -1,1 +1,12 @@
+# ignore MATLAB data file
 *.mat
+
+# ignore TeX middle file
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.tex.bak
+*.toc
