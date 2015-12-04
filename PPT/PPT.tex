@@ -171,8 +171,8 @@
     \begin{columns}[c]
         \column{8cm}
             \begin{itemize}
-              \item 原问题：给定时间$t_n$，求$E_{\min}$ $\Longrightarrow$ 求$t = t_n$与$C$的交点
-              \item 如果我们能够给出能量较小的初始解$(t_1,E_1)$，然后逐步添加能量，直到$t = t_n$
+              \item 原问题：给定时间$t_n$，求$E_{\min}$ $\Longrightarrow$ 求$t = t_n$与$C$的交点对应的运行方案
+              \item 如果我们能够给出能量较小的初始解$(t_1,E_1)$，然后逐步添加能量，直到$t = t_n$，即求得原问题的运行方案
             \end{itemize}
         \column{5cm}\includegraphics[width=4.5cm]{fig/fig2/fig2.pdf}
     \end{columns}
@@ -187,6 +187,77 @@
             \end{itemize}
         \column{5cm}\includegraphics[width=4.5cm]{fig/fig3/fig3.pdf}
     \end{columns}
+\end{frame}
+
+\begin{frame}{考虑一个理想的情况}
+\begin{columns}[c]
+    \column{5cm}
+        下面考虑一个理想的情况，即假设：
+        \begin{itemize}
+          \item 速度限制$v_{\max}$为常数
+          \item 阻力$r$也为常数
+        \end{itemize}
+    \column{6cm}
+    \begin{block}{优化模型}
+        \begin{equation*}
+          \min \quad E = \int_0^{t_{\max}} k_t(t) v(t) F(t) dt
+        \end{equation*}
+        \begin{equation*}
+          s.t. \left\{
+          \begin{array}{l}
+            m \frac{dv(t)}{dt} = k_t F - k_b B - r \\
+            L = \int_0^{t_{\max}} v(t) dt \\
+            v(0) = v_0, \quad v(t_{\max}) = v_T \\
+            k_t \in [0, 1], k_b \in [0,1], v \leq v_{\max}
+          \end{array}
+          \right.
+        \end{equation*}
+    \end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Pontryagin最大值原理}
+\begin{columns}[c]
+    \column{6.5cm}
+        根据Pontryagin最大值原理，前述优化模型可以转化为最大化下面的哈密顿函数：
+        \begin{equation*}
+          H = \frac{p_1}{v} \times (k_t F - k_b B - r) + p_2 v - k_t v F
+        \end{equation*}
+        其中$p_1$应该满足下面的微分方程：
+        \begin{equation*}
+          \frac{dp_1}{ds} = - \frac{\partial H}{\partial v}
+        \end{equation*}
+    \column{5.5cm}
+    \begin{block}{求解结果}
+    \begin{equation*}
+      \left\{
+        \begin{array}{l}
+        k_t = 1, k_b = 0, \, (p_1>v^2) \\
+        k_t \in [0,1], k_b = 0, \, (p_1 = v^2) \\
+        k_t = 0, k_b \in [0,1], \, (p_1 = 0) \\
+        k_t = 0, k_b = 0, \, (0 < p_1 < v^2) \\
+        k_t = 0, k_b = 1, \, (p_1 < 0).
+        \end{array}
+      \right.
+    \end{equation*}
+    \end{block}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Pontryagin最大值原理}
+\begin{columns}[c]
+\column{6cm}
+求解结果与四个阶段相对应：
+\begin{description}
+  \item[最大加速] $k_t = 1, k_b = 0$
+  \item[巡航] $k_t \in [0,1], k_b = 0$
+  \item[巡航] $k_t = 0, k_b \in [0,1]$
+  \item[惰行] $k_t = 0, k_b = 0$
+  \item[最大加速] $k_t = 0, k_b = 1$
+\end{description}
+
+\column{5cm} A fig to be insert. Optimal driving strategy for ideal situation.
+\end{columns}
 \end{frame}
 
 \end{document}
