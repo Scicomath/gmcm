@@ -253,7 +253,7 @@
   \item[巡航] $k_t \in [0,1], k_b = 0$
   \item[巡航] $k_t = 0, k_b \in [0,1]$
   \item[惰行] $k_t = 0, k_b = 0$
-  \item[最大加速] $k_t = 0, k_b = 1$
+  \item[最大制动] $k_t = 0, k_b = 1$
 \end{description}
 
 \column{7cm} \includegraphics[width=7cm]{fig/fig4/fig4.pdf}
@@ -272,4 +272,60 @@
 \end{columns}
 \end{frame}
 
+\begin{frame}{回到实际情况}
+\begin{columns}[c]
+\column{6cm}
+\begin{itemize}
+  \item 实际情况下，不同路段的速度限制是不一样的
+  \item 实际路况（坡度、曲率）是随着路段变化的
+  \item 基本阻力与速度相关
+\end{itemize}
+\column{6cm}图：不同路段，速度限制不一样。
+\end{columns}
+\end{frame}
+
+\begin{frame}{求解初始解}
+\begin{block}{初始解求法}
+首先将列车最大加速到速度为$50 \mathrm{km/h}$，然后使列车惰行，在要到达终点时按最大制动进行制动。
+\end{block}
+\begin{itemize}
+  \item 加速到$50 \mathrm{km/h}$是因为一般速度限制都大于等于$50 \mathrm{km/h}$
+  \item 实际过程中发现，部分路段阻力过大，因此在惰行的时候要设置一个加速度下限
+  \item 具体的制动点是通过检测是否遇到制动曲线来确定的
+\end{itemize}
+\end{frame}
+
+\begin{frame}{制动点的确定}
+\begin{block}{什么是制动曲线？}
+制动曲线是在某一点，以该点的目标速度按照最大制动逆推出来的速度-路程曲线。在列车行驶过程中，一旦列车的
+速度-路程曲线遇到制动曲线就要立刻进行最大制动。
+\end{block}
+
+图：制动曲线示意图
+\end{frame}
+
+\begin{frame}{一个实际的初始解}
+图：初始解示意图
+\end{frame}
+
+\begin{frame}{初始解的逐步修正}
+得到初始解后，以速度限制对路程进行分区，使得在每个分区内的速度限制都是一样的。
+
+图：分区示意图
+\end{frame}
+
+\begin{frame}{初始解的逐步修正}
+一般得到的初始解的时间是大于所规定的运行时间，所以需要多分配一小份能量$\Delta E$，对初始解进行逐步
+修正，直到达到目标运行时间为止。
+
+\begin{block}{能量分配准则}
+设总路程按照速度限制分成了$N$个子区间，逐次将分配的能量$\Delta E$分配到各个子区间。对于分配能量的区间
+按照已分配到的总能量，按照：最大加速、巡航、惰行、最大制动的策略计算运行方案。因此可以得到每一个区间
+的节省时间$\Delta t_i$，将能量$\Delta E$分配给节省时间最多的区间。
+\end{block}
+\end{frame}
+
+\begin{frame}{多站点情况}
+对于多站点情况，可以看做是两站点情况的一个特例
+\end{frame}
 \end{document}
