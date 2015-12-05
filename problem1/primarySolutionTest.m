@@ -10,13 +10,17 @@ load brakingCurve.mat
 % [ S,V,E,T,F,totalE,totalT,section ] = primarySolutionFun( stationP(7),stationP(8),speedLimit,gradient,...
 %     curvature, brakingCurveS,brakingCurveV,curveTerminal );
 figure
-plot(S,V*3.6)
+plotLineHand = plot(S,V*3.6);
 hold on
 for i = 1:size(speedLimit,1)
-    line(speedLimit(i,[1 3]),speedLimit(i,[2 2]))
+    speedLimitHand = line(speedLimit(i,[1 3]),speedLimit(i,[2 2]),'Color','r');
 end
-axis([S(end),S(1),0,90])
+axis([S(end),S(1),0,105])
 set(gca,'XDir','reverse')
+xlabel('公里标（m）')
+ylabel('速度（km/h）')
+legend([plotLineHand,speedLimitHand],'速度曲线','速度限制')
+printFigureToPdf('初始解示意图.pdf', [11.5,8.5],'centimeters',[0 0  0 0]);
 
 figure
 hold on
