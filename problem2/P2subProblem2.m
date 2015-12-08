@@ -34,3 +34,9 @@ for j = 1:1000
     end
 end
 
+
+bar(bestH)
+xlabel('发车间隔')
+ylabel('时间（s）')
+title('第二问第二小问发车间隔')
+printFigureToPdf('第二问第二小问发车间隔.pdf', [11.5,11],'centimeters',[0 0  0 0]);

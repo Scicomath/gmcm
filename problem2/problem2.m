@@ -87,5 +87,5 @@ figure
 plot(T,F)
 title('时间与计算牵引力的关系')
 
-%save problem2stage1.mat
+save problem2stage1.mat
 

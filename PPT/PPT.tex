@@ -425,6 +425,20 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{frame}
 
 \begin{frame}{第二问第一小问结果}
+\begin{center}
+图：第二问第一小问结果
+\end{center}
+\end{frame}
+
+\begin{frame}{结果的一点解释}
+
+为什么发车间隔都差不多？原因是：
+\begin{itemize}
+    \item 题目要求第一列列车发车时间和最后一列列车的发车时间之间间隔为63900秒
+    \item 平均下来发车间隔为645秒左右
+    \item 发车间隔的最大值限制为11分钟，即660秒
+    \item 因此没有多大的调整空间
+\end{itemize}
 
 \end{frame}
 
@@ -437,18 +451,112 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{frame}
 
 \begin{frame}{第二问第二小问分析}
-
+第二小问与第一小问的差别是
+\begin{itemize}
+    \item 在早高峰和晚高峰增加了特殊的发车间隔限制
+    \item 发车量变为240列
+\end{itemize}
+面临的困难：
+\begin{itemize}
+    \item 高峰时期的限制不好添加。哪些列车处于高峰期，取决于前面列车的发车间隔。无法明确指定对某一变量的
+    限制
+    \item 自变量的数目变得更多，目标函数的计算量更大
+\end{itemize}
 \end{frame}
 
-\begin{frame}{第二小问算法}
-
+\begin{frame}{第二小问算法}{蒙特卡洛法}
+【第二小问思路介绍】
 \end{frame}
 
-
-
+\begin{frame}{第二小问结果}
+【第二小问结果】
+\end{frame}
 
 \subsection{第三问、列车延误后运行优化控制问题}
-\subsubsection{模型建立}
-\subsubsection{算法求解}
+\begin{frame}{问题回顾}{第三问、列车延误后运行优化控制问题}
+\begin{description}
+  \item[第一小问] 接上问，若列车$i$在车站$A_j$延误$DT_j^i$（10秒）发车，请建立控制模型，找出在确保安全的前提下，首先使所有后
+续列车尽快恢复正点运行，其次恢复期间耗能最少的列车运行曲线
+  \item[第二小问] 假设$DT_j^i$为随机变量，普通延误（$0<DT_j^i <10 \, \mathrm{s}$）概率为$20\%$，严重延误（$DT_j^i >10 \, \mathrm{s}$）概率为$10\%$（超
+过$120$秒，接近下一班，不考虑调整），无延误（$DT_j^i= 0$）概率为$70\%$。若允许列车在各站到、发时间与原时
+间相比提前不超过$10$秒，根据上述统计数据，如何对第二问的控制方案进行调整？
+\end{description}
+\end{frame}
+
+\begin{frame}{问题分析}
+\begin{itemize}
+  \item 首先要保证列车的安全，后车的速度不能超过限制速度$V_{limit} = min(V_{line}, \sqrt{2LB_e})$
+  \begin{itemize}
+    \item $V_{line}$是列车当前位置的速度限速（$ \rm km/h$）
+    \item $L$是当前时刻前后车之间的距离（$\rm m$）
+    \item $B_e$是列车制动的最大减速度（$\rm m/s^2$）
+  \end{itemize}
+  \item 然后要尽快恢复正点运行，最后才考虑能耗最少
+  \item 下面我们分两种情况考虑这个问题
+\end{itemize}
+\end{frame}
+
+\begin{frame}{小延误情况}
+\begin{block}{小延误情况}
+小延误是指当前延误列车并不影响后续列车的情况。判断条件是当前延误列车与下一列列车的发车间隔大于最小
+发车间隔。
+\end{block}
+\begin{itemize}
+  \item<1-> 这种情况下，我们仅考虑延误的这一辆列车，让其尽可能的准时到达下一个站点
+  \item<2-> 若无法准时到达下个站点，则让其尽可能准时的到达下下个站点，以此类推
+  \item<3-> 为使能量消耗最小其中依然采用第一问的运行控制模型
+\end{itemize}
+\end{frame}
+
+\begin{frame}{大延误情况}
+\begin{itemize}
+  \item<1-> 当延误时间过长的时候，可能会影响到后续列车的运行
+  \item<2-> 对于这种情况，我们让延误的列车首先按照小延误的情况，尽可能快的恢复正点运行
+  \item<3-> 若后续列车在预定的发车时间与前车发车的时间间隔小于最小发车
+  间隔，则让其顺延，直到与前车的发车间隔大于最小发车间隔为止
+  \item<4-> 在后续的运行过程中按照新的速度限制$V_{limit} = min(V_{line}, \sqrt{2LB_e})$运行
+\end{itemize}
+\end{frame}
+
+\begin{frame}{第一小问结果}
+对于第一小问，都是属于小延误情况，所以仅需考虑单个列车的延误。求解的结果如下：
+\begin{center}
+图：第三问第一小问结果
+\end{center}
+\end{frame}
+
+\begin{frame}{第二小问结果}
+第二小问考虑延误时间为随机变量，故采用计算机模拟的方法，按照题目的要求生成延误时间的随机数。
+模拟的部分结果如下：
+\end{frame}
+
 \section{总结与展望}
+\begin{frame}{总结}
+\begin{description}
+  \item[第一问]<1-> 将行程按照速度限制划分区间。构造能量较小的初始解，然后逐步添加能量对初始解进行修正，
+  直到耗时达到给定时间
+  \item[第二问]<2-> 先建立单个列车的最优行车方案，然后采用遗传算法对发车间隔进行优化。对于第二小问，用
+  蒙特卡洛法进行求解
+  \item[第三问]<3-> 分小延误和大延误两种情况，对于小延误仅考虑延误的单个列车，让其尽快的正点运行。对于大
+延误，后续列车与延误列车的发车间隔必须大于最小发车间隔，并采用新的速度限制公式
+\end{description}
+
+\end{frame}
+
+\begin{frame}{有待改进的地反}
+\begin{itemize}
+  \item<1-> 在第一问的算法中，可以考虑一次对两个区间进行修正
+  \item<2-> 在第二问中可以考虑对停车间隔的优化
+  \item<3-> 改进第二问第二小问的算法
+  \item<4-> 考虑多个列车同时延误的情况
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[c]
+\begin{center}
+\Huge 谢谢！
+\end{center}
+\end{frame}
+
 \end{document}
