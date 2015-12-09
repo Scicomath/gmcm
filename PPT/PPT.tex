@@ -2,6 +2,7 @@
 \documentclass{beamer}
 \usepackage[UTF8,noindent]{ctexcap}
 \usepackage{graphicx}
+\usepackage{adjustbox}
 \usetheme{Madrid}%Madrid，JuanLesPins，Ilmenau
 \usefonttheme[onlymath]{serif}
 
@@ -455,10 +456,11 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{frame}
 
 \begin{frame}{再生能量利用示意图}
-\begin{center}
-\includegraphics[trim=120 170 50 2100,clip,width=9cm]{fig/fig12/fig12.pdf}
-%图：再生能量利用示意图
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[trim=3cm 0.4cm 1cm 17.2cm, width=9cm]{fig/fig12/fig12.pdf}\\
+  \caption{再生能量利用示意图}
+\end{figure}
 
 \end{frame}
 
