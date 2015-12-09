@@ -1,6 +1,7 @@
 % !Mode:: "TeX:UTF-8:Hard"
 \documentclass{beamer}
 \usepackage[UTF8,indent]{ctexcap}
+\usepackage{graphicx}
 \usetheme{Madrid}%Madrid，JuanLesPins，Ilmenau
 \usefonttheme[onlymath]{serif}
 
@@ -466,7 +467,18 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{frame}
 
 \begin{frame}{第二小问算法}{蒙特卡洛法}
-【第二小问思路介绍】
+\begin{enumerate}
+  \item<1-> 首先初始化两个变量，分别为时间间隔$h_i$和累积时间$S$
+  \item<2-> 然后判断累计时间是否在高峰期内
+  \begin{itemize}
+    \item<3-> 如果不在高峰期内，则按照非高峰期的发车间隔范围生成随机数
+    \item<4-> 如果在高峰期内，则按照高峰期的发车间隔范围生成随机数
+  \end{itemize}
+
+  \item<5-> 为了首尾两辆列车的发车间隔达到题目要求，我们仅对前面的发车间隔进行上述操作，后10辆列车
+  取剩余时间的平均值
+  \item<6-> 最后将上述过程重复循环$N$次，取其中的最优解
+\end{enumerate}
 \end{frame}
 
 \begin{frame}{第二小问结果}
@@ -488,14 +500,14 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 
 \begin{frame}{问题分析}
 \begin{itemize}
-  \item 首先要保证列车的安全，后车的速度不能超过限制速度$V_{limit} = min(V_{line}, \sqrt{2LB_e})$
+  \item<1-> 首先要保证列车的安全，后车的速度不能超过限制速度$V_{limit} = min(V_{line}, \sqrt{2LB_e})$
   \begin{itemize}
-    \item $V_{line}$是列车当前位置的速度限速（$ \rm km/h$）
-    \item $L$是当前时刻前后车之间的距离（$\rm m$）
-    \item $B_e$是列车制动的最大减速度（$\rm m/s^2$）
+    \item<2-> $V_{line}$是列车当前位置的速度限速（$ \rm km/h$）
+    \item<3-> $L$是当前时刻前后车之间的距离（$\rm m$）
+    \item<4-> $B_e$是列车制动的最大减速度（$\rm m/s^2$）
   \end{itemize}
-  \item 然后要尽快恢复正点运行，最后才考虑能耗最少
-  \item 下面我们分两种情况考虑这个问题
+  \item<5-> 然后要尽快恢复正点运行，最后才考虑能耗最少
+  \item<6-> 下面我们分两种情况考虑这个问题
 \end{itemize}
 \end{frame}
 
@@ -506,15 +518,16 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{block}
 \begin{itemize}
   \item<1-> 这种情况下，我们仅考虑延误的这一辆列车，让其尽可能的准时到达下一个站点
-  \item<2-> 若无法准时到达下个站点，则让其尽可能准时的到达下下个站点，以此类推
-  \item<3-> 为使能量消耗最小其中依然采用第一问的运行控制模型
+  \item<2-> 若无法准时到达下个站点，则让需要缩短的时间平均分配到两个路段。若任无法达到要求，则分配到三个路段
+  ，以此类推
+  \item<3-> 为使能量消耗尽量小，直接利用第一问的运行控制模型
 \end{itemize}
 \end{frame}
 
 \begin{frame}{大延误情况}
 \begin{itemize}
   \item<1-> 当延误时间过长的时候，可能会影响到后续列车的运行
-  \item<2-> 对于这种情况，我们让延误的列车首先按照小延误的情况，尽可能快的恢复正点运行
+  \item<2-> 对于这种情况，我们让延误的列车首先按照之前的策略，尽可能快的恢复正点运行
   \item<3-> 若后续列车在预定的发车时间与前车发车的时间间隔小于最小发车
   间隔，则让其顺延，直到与前车的发车间隔大于最小发车间隔为止
   \item<4-> 在后续的运行过程中按照新的速度限制$V_{limit} = min(V_{line}, \sqrt{2LB_e})$运行
@@ -523,14 +536,71 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 
 \begin{frame}{第一小问结果}
 对于第一小问，都是属于小延误情况，所以仅需考虑单个列车的延误。求解的结果如下：
-\begin{center}
-图：第三问第一小问结果
-\end{center}
+\begin{table} \tiny
+  \centering
+  \caption{第二问第一小问结果}
+  \begin{tabular}{ccccc}
+  \hline
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  延误站台 & 实际消耗能量（度） & 额外消耗能量（度） & 晚点时间（秒） & 调整站点数 \\
+  \hline
+  2 & 225.56 & 5.01 & 0.00 & 1 \\
+  3 & 225.29 & 4.74 & 0.00 & 1 \\
+  4 & 231.17 & 10.63 & 0.00 & 1 \\
+  5 & 227.57 & 7.02 & 0.00 & 1 \\
+  6 & 227.56 & 7.01 & 0.00 & 1 \\
+  7 & 225.10 & 4.56 & 0.00 & 1 \\
+  8 & 227.38 & 6.84 & 0.00 & 1 \\
+  9 & 225.31 & 4.76 & 0.00 & 1 \\
+  10 & 229.61 & 9.06 & 0.00 & 1 \\
+  11 & 229.01 & 8.47 & 5.00 & 1 \\
+  12 & 228.33 & 7.78 & 0.00 & 1 \\
+  13 & 231.83 & 11.28 & 0.00 & 1 \\
+  \hline
+\end{tabular}
+  \label{p2sub1}
+\end{table}
+\end{frame}
+
+\begin{frame}{第一小问结果}
+\begin{figure}
+  \centering
+  \includegraphics[width=7cm]{fig/fig15/fig15.pdf}\\
+  \caption{延迟情况下的速度调整示意图}
+\end{figure}
+
+
 \end{frame}
 
 \begin{frame}{第二小问结果}
 第二小问考虑延误时间为随机变量，故采用计算机模拟的方法，按照题目的要求生成延误时间的随机数。
 模拟的部分结果如下：
+\begin{table}\tiny
+  \centering
+  \begin{tabular}{|c|c|c|c|c|}
+     \hline
+     % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+    延迟站点&	延迟类型&	延迟时间（s）&	晚点时间（s）&	额外能量（度） \\
+    \hline
+    4&	0&	0.00&	0.00&	0.00\\
+    6&	0&	0.00&	0.00&	0.00\\
+    7&	0&	0.00&	0.00&	0.00\\
+    12&	0&	0.00&	0.00&	0.00\\
+    3&	0&	0.00&	0.00&	0.00\\
+    11&	0&	0.00&	0.00&	0.00\\
+    9&	0&	0.00&	0.00&	0.00\\
+    6&	1&	1.06&	0.00&	4.41\\
+    4&	0&	0.00&	0.00&	0.00\\
+    6&	2&	28.62&	19.08&	18.41\\
+    7&	1&	1.98&	0.00&	4.56\\
+    3&	0&	0.00&	0.00&	0.00\\
+    8&	0&	0.00&	0.00&	0.00\\
+    4&	0&	0.00&	0.00&	0.00\\
+     \hline
+   \end{tabular}
+\end{table}
+
+
 \end{frame}
 
 \section{总结与展望}
@@ -550,7 +620,7 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \begin{itemize}
   \item<1-> 在第一问的算法中，可以考虑一次对两个区间进行修正
   \item<2-> 在第二问中可以考虑对停车间隔的优化
-  \item<3-> 改进第二问第二小问的算法
+  \item<3-> 改进第二问第二小问的蒙特卡罗算法
   \item<4-> 考虑多个列车同时延误的情况
 \end{itemize}
 
