@@ -118,17 +118,7 @@
   \item[约束条件三]<3-> 牛顿第二定律
     \[m{a_t} = m\frac{{d{v_t}}}{{dt}} = F\left( t \right) - B\left( t \right) - W\left( t \right)\]
 \end{description}
-%约束条件一：由题目所给的数据中可以知道从 $A_6$站到 $A_7$站的总路程为1354m，因此整个过程中行走的总路程${L_{\max }} = 1354$ m，即：
-%\[\int_o^{{t_{\max }}} {{v_t}dt}  = {L_{\max }}\]
-%\\
-%约束条件二：列车起始时刻和到达 $A_7$站时刻的速度均为0且在运行的任何时刻速度都不能大于该时刻所处路段的最大速度$\overline {{v_t}} $ ，即：
-%\[\left\{ \begin{array}{l}
-% {v_0} = {v_{{t_{\max }}}} = 0 \\
-% {v_t} \le \overline {{v_t}}  \\
-% \end{array} \right.\]
-%\\
-%约束条件三：由牛顿学第二定律可知，实际输出的牵引加速度乘以质量等于合外力，即：
-%\[m{a_t} = m\frac{{d{v_t}}}{{dt}} = F\left( t \right) - B\left( t \right) - W\left( t \right)\]
+
 \end{frame}
 
 \begin{frame}{第一问模型}
@@ -174,7 +164,13 @@
               \item 运行方案$(t,E) \Longrightarrow  P(t,E)$
               \item 多目标规划：Pareto front $C$（非劣解集）
             \end{itemize}
-        \column{5cm}\includegraphics[width=4.5cm]{fig/fig1/fig1.pdf}
+        \column{5cm}
+            \begin{figure}
+              \centering
+              \includegraphics[width=4.5cm]{fig/fig1/fig1.pdf}\\
+              \caption{Pareto front示意图}
+            \end{figure}
+
     \end{columns}
 \end{frame}
 
@@ -185,7 +181,13 @@
               \item 原问题：给定时间$t_n$，求$E_{\min}$ $\Longrightarrow$ 求$t = t_n$与$C$的交点对应的运行方案
               \item 如果我们能够给出能量较小的初始解$(t_1,E_1)$，然后逐步添加能量，直到$t = t_n$，即求得原问题的运行方案
             \end{itemize}
-        \column{5cm}\includegraphics[width=4.5cm]{fig/fig2/fig2.pdf}
+        \column{5cm}
+            \begin{figure}
+              \centering
+              \includegraphics[width=4.5cm]{fig/fig2/fig2.pdf}\\
+              \caption{目标解与初始解在$E-t$平面的位置}
+            \end{figure}
+
     \end{columns}
 \end{frame}
 
@@ -196,7 +198,14 @@
               \item 原问题：给定时间$t_n$，求$E_{\min}$ $\Longrightarrow$ 求$t = t_n$与$C$的交点
               \item 如果我们能够给出能量较小的初始解$(t_1,E_1)$，然后逐步添加能量，直到$t = t_n$
             \end{itemize}
-        \column{5cm}\includegraphics[width=4.5cm]{fig/fig3/fig3.pdf}
+        \column{5cm}
+        \begin{figure}
+          \centering
+          \includegraphics[width=4.5cm]{fig/fig3/fig3.pdf}\\
+          \caption{逐步修正示意图}
+        \end{figure}
+
+
     \end{columns}
 \end{frame}
 
@@ -267,7 +276,13 @@
   \item[最大制动] $k_t = 0, k_b = 1$
 \end{description}
 
-\column{7cm} \includegraphics[width=7cm]{fig/fig4/fig4.pdf}
+\column{7cm}
+\begin{figure}
+  \centering
+  \includegraphics[width=7cm]{fig/fig4/fig4.pdf}\\
+  \caption{理想情况下最优解示意图}
+\end{figure}
+
 \end{columns}
 \end{frame}
 
@@ -279,23 +294,31 @@
 对于理想情况，所有“能量最小”和“时间最短”问题的最优解都是由：最大牵引、巡航、惰行和最大制动组成。
 \end{block}
 
-\column{4.2cm} \includegraphics[width=4cm]{fig/fig2/fig2.pdf}
+\column{4.2cm}
+\begin{figure}
+  \centering
+  \includegraphics[width=4cm]{fig/fig2/fig2.pdf}\\
+  \caption{“能量最小”与“时间最短”问题的最优解}
+\end{figure}
+
+
 \end{columns}
 \end{frame}
 
 \begin{frame}{回到实际情况}
-%\begin{columns}[c]
-%\column{6cm}
+
 \begin{itemize}
   \item 实际情况下，不同路段的速度限制是不一样的
   \item 实际路况（坡度、曲率）是随着路段变化的
   \item 基本阻力与速度相关
 \end{itemize}
-%\column{6cm}
-\begin{center}
-\includegraphics[width=7cm]{fig/fig5/fig5.pdf}
-\end{center}
-%\end{columns}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=7cm]{fig/fig5/fig5.pdf}\\
+  \caption{实际情况下速度限制示意图}
+\end{figure}
+
 \end{frame}
 
 \begin{frame}{求解初始解}
@@ -314,24 +337,31 @@
 制动曲线是在某一点，以该点的目标速度按照最大制动逆推出来的速度-路程曲线。在列车行驶过程中，一旦列车的
 速度-路程曲线遇到制动曲线就要立刻进行最大制动。
 \end{block}
+\begin{figure}
+  \centering
+  \includegraphics[width=5cm]{fig/fig6/fig6.pdf}\\
+  \caption{制动曲线示意图}
+\end{figure}
 
-\begin{center}
-\includegraphics[width=6.5cm]{fig/fig6/fig6.pdf}
-\end{center}
 \end{frame}
 
 \begin{frame}{一个实际的初始解}
-\begin{center}
-\includegraphics[width=8cm]{fig/fig7/fig7.pdf}
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[width=8cm]{fig/fig7/fig7.pdf}\\
+  \caption{初始解示意图}
+\end{figure}
+
 \end{frame}
 
 \begin{frame}{初始解的逐步修正}
 得到初始解后，以速度限制对路程进行分区，使得在每个分区内的速度限制都是一样的。
+\begin{figure}
+  \centering
+  \includegraphics[width=7.5cm]{fig/fig8/fig8.pdf}\\
+  \caption{路程分区示意图}
+\end{figure}
 
-\begin{center}
-\includegraphics[width=8cm]{fig/fig8/fig8.pdf}
-\end{center}
 \end{frame}
 
 \begin{frame}{初始解的逐步修正}
@@ -355,15 +385,21 @@
 \end{frame}
 
 \begin{frame}{第一问速度路程曲线}{第一小问}
-\begin{center}
-\includegraphics[width=9cm]{fig/fig9/fig9.pdf}
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[width=8cm]{fig/fig9/fig9.pdf}\\
+  \caption{第一小问速度路程曲线}
+\end{figure}
+
 \end{frame}
 
 \begin{frame}{第一问速度路程曲线}{第二小问}
-\begin{center}
-\includegraphics[width=9cm]{fig/fig10/fig10.pdf}
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[width=8cm]{fig/fig10/fig10.pdf}\\
+  \caption{第二小问速度路程曲线}
+\end{figure}
+
 \end{frame}
 
 
@@ -398,10 +434,11 @@
 
 \begin{frame}{单个列车的优化问题}
 单个列车的优化问题在第一问中已经解决了，利用第一问的算法，求出的从站点$A_1$到$A_{14}$的速度路程曲线为：
-
-\begin{center}
-\includegraphics[width=8.3cm]{fig/fig11/fig11.pdf}
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[width=7cm]{fig/fig11/fig11.pdf}\\
+  \caption{第二问单列车速度路程曲线}
+\end{figure}
 \end{frame}
 
 \begin{frame}{再生能量的利用}
@@ -437,9 +474,12 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{frame}
 
 \begin{frame}{第二问第一小问结果}
-\begin{center}
-\includegraphics[width=7.5cm]{fig/fig13/fig13.pdf}
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[width=6cm]{fig/fig13/fig13.pdf}\\
+  \caption{第二问第一小问结果}
+\end{figure}
+
 \end{frame}
 
 \begin{frame}{结果的一点解释}
@@ -492,9 +532,12 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \end{frame}
 
 \begin{frame}{第二小问结果}
-\begin{center}
-\includegraphics[width=8cm]{fig/fig14/fig14.pdf}
-\end{center}
+\begin{figure}
+  \centering
+  \includegraphics[width=6.7cm]{fig/fig14/fig14.pdf}\\
+  \caption{第二小问结果}
+\end{figure}
+
 \end{frame}
 
 \subsection{第三问、列车延误后运行优化控制问题}
@@ -575,10 +618,9 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 \begin{frame}{第一小问结果}
 \begin{figure}
   \centering
-  \includegraphics[width=7cm]{fig/fig15/fig15.pdf}\\
+  \includegraphics[width=6.8cm]{fig/fig15/fig15.pdf}\\
   \caption{延迟情况下的速度调整示意图}
 \end{figure}
-
 
 \end{frame}
 
@@ -636,10 +678,12 @@ $$E_{used} = E_{reg} \cdot \frac{t_{overlap}}{t_{brake}}$$
 
 \end{frame}
 
-\begin{frame}[c]
-\begin{center}
-\Huge 谢谢！
-\end{center}
-\end{frame}
+
+\section{谢谢大家!}
+%\begin{frame}[c]
+%\begin{center}
+%\Huge 谢谢！
+%\end{center}
+%\end{frame}
 
 \end{document}
