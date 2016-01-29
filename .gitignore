@@ -1,3 +1,6 @@
+# ignore paper
+DK0076.pdf
+
 # ignore MATLAB data file
 *.mat
 
