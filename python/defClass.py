@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 
 speedLimit = np.loadtxt("../data/限速数据.csv", delimiter=",")
 nodePosition = np.loadtxt("../data/站点公里标.csv", delimiter=",")
 
-def sectionFun(startNode, speedLimit, nodePosition):
+def sectionFun(startNode):
     startP = nodePosition[startNode-1, 1]
     endP = nodePosition[startNode, 1]
     for index, ed in enumerate(speedLimit[:,2]):
@@ -11,7 +12,7 @@ def sectionFun(startNode, speedLimit, nodePosition):
             startIndex = index
             break
     for index, ed in enumerate(speedLimit[:,2]):
-        if endP <= ed:
+        if endP < ed:
             endIndex = index
             break
     section = np.zeros((startIndex - endIndex + 1, 2))
