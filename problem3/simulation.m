@@ -5,7 +5,7 @@ delayTime = zeros(n,1);
 lateTime = zeros(n,1);
 delaytotalE = zeros(n,1);
 delayType = randsrc(n,1,[0,1,2;0.7,0.2,0.1]);
-fileID = fopen('simResult.txt','a');
+fileID = fopen('simResult2.txt','a');
 
 for i = 1:length(delayType)
     if delayType(i)==0
@@ -26,7 +26,7 @@ for i = 1:n
             delayFun( delaySta(i),delayTime(i),interSta,speedLimit,gradient,curvature,...
             brakingCurveS,brakingCurveV,curveTerminal,stationP );
     end
-    fprintf(fileID,'%f\t%d\t%f\t%f\t%f\n',delaySta(i),delayType(i),delayTime(i),lateTime(i),delaytotalE(i))
+    fprintf(fileID,'%d\t%d\t%f\t%f\t%f\n',delaySta(i),delayType(i),delayTime(i),lateTime(i),delaytotalE(i))
 end
 
 result = [delaySta,delayType,delayTime,lateTime,delaytotalE];

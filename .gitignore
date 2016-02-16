@@ -1,1 +1,19 @@
+# ignore paper
+DK0076.pdf
+
+# ignore backup file
+*~
+
+# ignore MATLAB data file
 *.mat
+
+# ignore TeX middle file
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.tex.bak
+*.toc
+*.tex.sav

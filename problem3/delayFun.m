@@ -1,4 +1,4 @@
-function [ S,V,T,F,calS,calDist,Acce,totalT,totalE,brakingTerminal,lateTime ] =...
+function [ S,V,T,F,calS,calDist,Acce,totalT,totalE,brakingTerminal,lateTime,adjustNum ] =...
     delayFun( delaySta,delayTime,interSta,speedLimit,gradient,curvature,...
     brakingCurveS,brakingCurveV,curveTerminal,stationP )
 %delayFun ÑÓ³Ùµ÷Õûº¯Êý
@@ -23,6 +23,7 @@ for i = 1:length(mayDelay)
         end
     end
     if all(successFlag)
+        adjustNum = i;
         for j = 1:i
             interSta{mayDelay(j)} = tempInterSta{j}{1};
             dwellTime(mayDelay(j)-1) = dwellTime(mayDelay(j)-1) + delayTimeVec(j);

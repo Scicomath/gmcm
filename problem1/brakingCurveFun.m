@@ -18,8 +18,8 @@ Ereg(1) = 0;
 V = zeros(size(S));
 V(1) =  endSpeed / 3.6; % 最终速度
 for i = 2:length(V)
-    [ Bmax ] = maxBrakingFun( V(i - 1) );
-    [W] = totalResistanceFun(V(i - 1), S(i-1), gradient, curvature);
+    [ Bmax ] = maxBrakingFun( V(i - 1)*3.6 );
+    [W] = totalResistanceFun(V(i - 1)*3.6, S(i-1), gradient, curvature);
     capacityMaxA = (Bmax + W) / M; % 能够达到的最大加速度
     if capacityMaxA > 1
         a = 1;

@@ -63,6 +63,9 @@ figure
 plot(S,V*3.6)
 set(gca,'XDir','reverse')
 title('速度路程曲线')
+xlabel('公里标（m）')
+ylabel('速度（km/h）')
+printFigureToPdf('第二问单列车速度路程曲线.pdf', [11.5,8.5],'centimeters',[0 0  0 0]);
 
 figure
 plot(T,V*3.6)
@@ -84,5 +87,5 @@ figure
 plot(T,F)
 title('时间与计算牵引力的关系')
 
-%save problem2stage1.mat
+save problem2stage1.mat
 
