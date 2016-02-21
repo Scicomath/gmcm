@@ -74,21 +74,16 @@ class Interstation:
         self.V[0][0] = startV
         self.V[-1][-1] = endV
         # 区间限速制动曲线
-        self.braking = [None]*(self.secNum)
-        self.Ereg = [None]*(self.secNum)
+        self.brakingV = [None]*self.secNum
+        self.brakingEreg = [None]*self.secNum
+        self.brakingB = [None]*self.secNum
+        self.brakingA = [None]*self.secNum
         for i in range(1,self.secNum):
             if self.secLimit[i] < self.secLimit[i-1]:
-                self.braking[i-1], self.Ereg[i-1] = self.brakingCurveFun(i-1)
-        #self.endBraking = Interstation.endBrakingFun(self.section)
+                self.brakingV[i-1], self.brakingEreg[i-1], self.brakingB[i-1], self.brakingA[i-1] \
+                    = self.brakingCurveFun(i-1)
         self.endBrakingFun()
         # 当前的状态
-        #self.nowS = self.S[0,0]
-        #self.nowT = 0.
-        #self.nowF = 0.
-        #self.nowB = 0.
-        #self.nowV = 0.
-        #self.nowSec = 0
-        #self.nowIndex = 0
         self.now = [0,0] # 状态变量, 第一个元素为区间索引, 第二个元素为区间内索引
         self.secEnerge = np.zeros(self.secNum)
         self.secLeftE = np.zeros(self.secNum)
@@ -162,52 +157,66 @@ class Interstation:
         '''
         S = self.S[index][::-1]
         Ereg = np.zeros(len(S))
+        A = np.zeros(len(S))
+        B = np.zeros(len(S))
         V = np.zeros(len(S))
-        Ereg[0] = 0
+        T = np.zeros(len(S))
         V[0] = self.secLimit[index+1] / 3.6 # 最终速度
         for i in range(1,len(S)):
             Bmax = self.maxBrakingForce(V[i-1])
             W = self.totalResistanceFun(V[i-1], S[i-1])
             capacityMaxA = (Bmax + W) / self.M
-            if capacityMaxA > 1:
-                a = 1
+            if capacityMaxA > 1.:
+                a = 1.
+                B[i] = a * self.M - W
             else:
                 a = capacityMaxA
+                B[i] = Bmax
+            A[i] = -a
             V[i] = np.sqrt(V[i-1]**2 + 2 * a * (S[i]-S[i-1]))
             Emech = 0.5*self.M*(V[i]**2 - V[i-1]**2)
             Ef = W * (S[i] - S[i-1])
             Ereg[i] = Ereg[i-1] + (Emech - Ef) * 0.95
-        return V[::-1], Ereg[::-1]
+        return V[::-1], Ereg[::-1], B[::-1], A[::-1] 
 
     def endBrakingFun(self):
         '''
         计算终点制动曲线
         '''
-        self.endBraking = [None]*self.secNum
-        self.endEreg = [None]*self.secNum
+        self.endBrakingV = [None]*self.secNum
+        self.endBrakingEreg = [None]*self.secNum
+        self.endBrakingB = [None]*self.secNum
+        self.endBrakingA = [None]*self.secNum
         for i in range(self.secNum):
-            self.endBraking[i] = np.zeros(len(self.S[i]))
-            self.endEreg[i] = np.zeros(len(self.S[i]))
+            self.endBrakingV[i] = np.zeros(len(self.S[i]))
+            self.endBrakingEreg[i] = np.zeros(len(self.S[i]))
+            self.endBrakingB[i] = np.zeros(len(self.S[i]))
+            self.endBrakingA[i] = np.zeros(len(self.S[i]))
 
         for i in range(self.secNum-1, -1, -1):
             if i == self.secNum-1:
-                self.endBraking[i][-1] = 0.
-                self.endEreg[i][-1] = 0.
+                self.endBrakingV[i][-1] = 0.
+                self.endBrakingEreg[i][-1] = 0.
             else:
-                self.endBraking[i][-1] = self.endBraking[i+1][0]
-                self.endEreg[i][-1] = self.endEreg[i+1][0]
-            for j in range(len(self.endBraking[i])-2, -1, -1):
-                Bmax = self.maxBrakingForce(self.endBraking[i][j+1])
-                W = self.totalResistanceFun(self.endBraking[i][j+1], self.S[i][j+1])
+                self.endBrakingV[i][-1] = self.endBrakingV[i+1][0]
+                self.endBrakingEreg[i][-1] = self.endBrakingEreg[i+1][0]
+                self.endBrakingA[i][-1] = self.endBrakingA[i+1][0]
+                self.endBrakingB[i][-1] = self.endBrakingB[i+1][0]
+            for j in range(len(self.endBrakingV[i])-2, -1, -1):
+                Bmax = self.maxBrakingForce(self.endBrakingV[i][j+1])
+                W = self.totalResistanceFun(self.endBrakingV[i][j+1], self.S[i][j+1])
                 capacityMaxA = (Bmax + W) / self.M
                 if capacityMaxA > 1:
-                    a = 1
+                    a = 1.
+                    self.endBrakingB[i][j] = a * self.M - W
                 else:
                     a = capacityMaxA
-                self.endBraking[i][j] = np.sqrt(self.endBraking[i][j+1]**2 + 2*a*(self.S[i][j]-self.S[i][j+1]))
-                Emech = 0.5*self.M*(self.endBraking[i][j]**2 - self.endBraking[i][j+1]**2)
+                    self.endBrakingB[i][j] = Bmax
+                self.endBrakingA[i][j] = -a
+                self.endBrakingV[i][j] = np.sqrt(self.endBrakingV[i][j+1]**2 + 2*a*(self.S[i][j]-self.S[i][j+1]))
+                Emech = 0.5*self.M*(self.endBrakingV[i][j]**2 - self.endBrakingV[i][j+1]**2)
                 Ef = W * (self.S[i][j] - self.S[i][j+1])
-                self.endEreg[i][j] = self.endEreg[i][j+1] + (Emech - Ef) * 0.95
+                self.endBrakingEreg[i][j] = self.endBrakingEreg[i][j+1] + (Emech - Ef) * 0.95
         
 
     def initSolution(self):
@@ -241,7 +250,12 @@ class Interstation:
                 return None
             else:
                 sec += 1
-                index = 0
+                index = 1
+                self.V[sec][0] = self.V[sec-1][-1]
+                self.A[sec][0] = self.A[sec-1][-1]
+                self.B[sec][0] = self.B[sec-1][-1]
+                self.F[sec][0] = self.F[sec-1][-1]
+                self.T[sec][0] = self.T[sec-1][-1]
                 nextState = (sec, index)
                 return nextState
         else:
@@ -274,7 +288,16 @@ class Interstation:
             self.V[nextSec][nextIndex] = np.sqrt(self.V[sec][index]**2 + 2 * a * diffS)
             aveV = (self.V[sec][index] + self.V[nextSec][nextIndex]) / 2
             self.T[nextSec][nextIndex] = self.T[sec][index] + diffS / aveV
-            self.now = list(nextState)
+            if self.V[nextSec][nextIndex] > self.endBrakingV[nextSec][nextIndex]:
+                self.fullbreaking('endBraking')
+            else:
+                if self.brakingV[nextSec] != None:
+                    if self.V[nextSec][nextIndex] > self.brakingV[nextSec][nextIndex]:
+                        self.fullbreaking('secBraking')
+                    else:
+                        self.now = list(nextState)
+                else:
+                    self.now = list(nextState)
     def coasting(self):
         sec = self.now[0]
         index = self.now[1]
@@ -290,12 +313,58 @@ class Interstation:
             self.V[nextSec][nextIndex] = np.sqrt(self.V[sec][index]**2 + 2 * a * diffS)
             aveV = (self.V[sec][index] + self.V[nextSec][nextIndex]) / 2
             self.T[nextSec][nextIndex] = self.T[sec][index] + diffS / aveV
-            self.now = list(nextState)
+            if self.V[nextSec][nextIndex] > self.endBrakingV[nextSec][nextIndex]:
+                self.fullbreaking('endBraking')
+            else:
+                if self.brakingV[nextSec] != None:
+                    if self.V[nextSec][nextIndex] > self.brakingV[nextSec][nextIndex]:
+                        self.fullbreaking('secBraking')
+                    else:
+                        self.now = list(nextState)
+                else:
+                    self.now = list(nextState)
 
     def cruising(self):
         pass
-    def fullbreaking(self):
-        pass
+    def fullbreaking(self, type):
+        nextState = self.next()
+        sec = nextState[0]
+        index = nextState[1]
+        if type == 'endBraking':
+            for i in range(sec, self.secNum):
+                if i == sec:
+                    for j in range(index, len(self.S[i])):
+                        self.V[i][j] = self.endBrakingV[i][j]
+                        self.B[i][j] = self.endBrakingB[i][j]
+                        self.A[i][j] = self.endBrakingA[i][j]
+                        aveV = (self.V[i][j] + self.V[i][j-1]) / 2.
+                        diffS = self.S[i][j-1] - self.S[i][j]
+                        self.T[i][j] = self.T[i][j-1] + diffS / aveV
+                else:
+                    self.V[i][0] = self.V[i-1][-1]
+                    self.A[i][0] = self.A[i-1][-1]
+                    self.B[i][0] = self.B[i-1][-1]
+                    self.F[i][0] = self.F[i-1][-1]
+                    self.T[i][0] = self.T[i-1][-1]
+                    for j in range(1, len(self.S[i])):
+                        self.V[i][j] = self.endBrakingV[i][j]
+                        self.B[i][j] = self.endBrakingB[i][j]
+                        self.A[i][j] = self.endBrakingA[i][j]
+                        aveV = (self.V[i][j] + self.V[i][j-1]) / 2.
+                        diffS = self.S[i][j-1] - self.S[i][j]
+                        self.T[i][j] = self.T[i][j-1] + diffS / aveV
+            self.now = [self.secNum-1, len(self.S[-1])-1]
+
+        if type == 'secBraking':
+            for i in range(index, len(self.S[sec])):
+                self.V[sec][i] = self.brakingV[sec][i]
+                self.B[sec][i] = self.brakingB[sec][i]
+                self.A[sec][i] = self.brakingA[sec][i]
+                aveV = (self.V[sec][i] + self.V[sec][i-1]) / 2.
+                diffS = self.S[sec][i-1] - self.S[sec][i]
+                self.T[sec][i] = self.T[sec][i-1] + diffS / aveV
+            self.now = [self.secNum-1, len(self.S[-1])-1]
+                        
     def generateSol(self, startSec = 0):
         self.nowSec = startSec
         self.nowIndex = 0
