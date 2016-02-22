@@ -37,7 +37,7 @@ class Interstation:
     '''
     站间行驶方案 class
     '''
-    def __init__(self, startNode,targetT, startV = 0., endV = 0.):
+    def __init__(self, startNode):
         '''
         构造函数
         '''
@@ -50,9 +50,6 @@ class Interstation:
         self.constB = 0.0622
         self.constC = 0.001807
         self.constc = 600 # c为综合反映影响曲线阻力许多因素的经验常数，我国轨道交通一般取600
-        self.targetT = targetT        # 目标行驶时间
-        self.startV = startV
-        self.endV = endV
         self.section, self.secLimit = sectionFun(startNode) # 区间端点 和 区间限制
         self.secNum = len(self.section) # 区间个数
         self.S = [None]*self.secNum     # 初始化位置向量
@@ -71,8 +68,7 @@ class Interstation:
             self.V[i] = np.zeros(len(self.S[i]))
             self.A[i] = np.zeros(len(self.S[i]))
             self.usedE[i] = np.zeros(len(self.S[i]))
-        self.V[0][0] = startV
-        self.V[-1][-1] = endV
+        
         # 区间限速制动曲线
         self.brakingV = [None]*self.secNum
         self.brakingEreg = [None]*self.secNum
@@ -239,13 +235,15 @@ class Interstation:
         self.totalT = self.T[-1][-1]
 
     def moreE(self, deltaE):
-        tempT = np.zeros(self.secNum)
+        diffT = np.zeros(self.secNum)
+        diffE = np.zeros(self.secNum)
         for i in range(self.secNum):
             temp = copy.deepcopy(self)
             temp.secEnerge[i] += deltaE
             temp.generateSol(i) # 根据重新分配的能量求解
-            tempT[i] = temp.totalT
-        index = np.argmin(tempT)
+            diffT[i] = self.totalT - temp.totalT
+            diffE[i] = temp.totalE - self.totalE
+        index = np.argmin(diffE/diffT)
         self.secEnerge[index] += deltaE
         self.generateSol(index)
     
@@ -412,9 +410,10 @@ class Interstation:
     def generateSol(self, startSec = 0):
         self.now = [startSec, 0]
         state = None
-        for i in range(self.secNum):
-            self.secLeftE[i] = self.secEnerge[i]
+        #for i in range(self.secNum):
+        #    self.secLeftE[i] = self.secEnerge[i]
         for i in range(startSec, self.secNum):
+            self.secLeftE[i] = self.secEnerge[i]
             self.now[1] = 0
             while self.secLeftE[i] > 10. and (not self.secEnded()):
                 state = self.fullAcce()
@@ -427,11 +426,18 @@ class Interstation:
                 self.coasting()
             if self.next() != None:
                 self.now = list(self.next())
-            self.secEnerge[i] -= self.secLeftE[i]
+            
             if i != self.secNum - 1:
                 self.secEnerge[i+1] += self.secLeftE[i]
-                self.secLeftE[i] = 0.
+            self.secEnerge[i] -= self.secLeftE[i]
+            self.secLeftE[i] = 0.
+        # 修正加速度和力的区间端点偏差
+        for i in range(self.secNum-1):
+            self.A[i][-1] = self.A[i+1][0]
+            self.F[i][-1] = self.F[i+1][0]
+            self.B[i][-1] = self.B[i+1][0]
         self.totalT = self.T[-1][-1]
+        self.totalE = np.sum(self.secEnerge)
             
         
             
