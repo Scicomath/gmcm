@@ -17,3 +17,7 @@ DK0076.pdf
 *.tex.bak
 *.toc
 *.tex.sav
+
+# ignore *.pyc file
+*.pyc
+python/__pycache__/
