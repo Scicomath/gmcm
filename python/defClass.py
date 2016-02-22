@@ -280,7 +280,6 @@ class Interstation:
         if nextState != None:
             nextSec = nextState[0]
             nextIndex = nextState[1]
-
             Fmax = self.maxTractionForce(self.V[sec][index])
             W = self.totalResistanceFun(self.V[sec][index], self.S[sec][index])
             capacityMaxA = (Fmax - W) / self.M
@@ -416,6 +415,7 @@ class Interstation:
         for i in range(self.secNum):
             self.secLeftE[i] = self.secEnerge[i]
         for i in range(startSec, self.secNum):
+            self.now[1] = 0
             while self.secLeftE[i] > 10. and (not self.secEnded()):
                 state = self.fullAcce()
                 if state == 'cruising':
@@ -431,6 +431,7 @@ class Interstation:
             if i != self.secNum - 1:
                 self.secEnerge[i+1] += self.secLeftE[i]
                 self.secLeftE[i] = 0.
+        self.totalT = self.T[-1][-1]
             
         
             
