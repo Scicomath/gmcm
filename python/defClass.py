@@ -27,7 +27,7 @@ def sectionFun(startNode):
     for index, val in enumerate(range(startIndex, endIndex-1, -1)):
         section[index, 0] = speedLimit[val, 2]
         section[index, 1] = speedLimit[val, 0]
-        secLimit[index] = speedLimit[val, 1]
+        secLimit[index] = speedLimit[val, 1] / 3.6 # 转换为m/s
     section[0,0] = startP
     section[-1,-1] = endP
     return section, secLimit
@@ -161,7 +161,7 @@ class Interstation:
         B = np.zeros(len(S))
         V = np.zeros(len(S))
         T = np.zeros(len(S))
-        V[0] = self.secLimit[index+1] / 3.6 # 最终速度
+        V[0] = self.secLimit[index+1] # 最终速度
         for i in range(1,len(S)):
             Bmax = self.maxBrakingForce(V[i-1])
             W = self.totalResistanceFun(V[i-1], S[i-1])
@@ -231,6 +231,13 @@ class Interstation:
             # 若尚未到达, 则继续惰行
             self.coasting()
 
+        self.totalE = 0.
+        for i in range(self.secNum):
+            self.secEnerge[i] = np.sum(self.usedE[i])
+            self.secLeftE[i] = self.secEnerge[i]
+            self.totalE += self.secEnerge[i]
+        self.totalT = self.T[-1][-1]
+
     def moreE(self, deltaE):
         tempT = np.zeros(self.secNum)
         for i in range(self.secNum):
@@ -283,21 +290,22 @@ class Interstation:
             else:
                 a = capacityMaxA
                 self.F[sec][index] = Fmax
-            self.A[nextSec][nextIndex] = a
+            self.A[sec][index] = a
             diffS = self.S[sec][index] - self.S[nextSec][nextIndex]
+            self.usedE[nextSec][nextIndex] = self.F[sec][index] * diffS
+            self.secLeftE[nextSec] -= self.usedE[nextSec][nextIndex]
             self.V[nextSec][nextIndex] = np.sqrt(self.V[sec][index]**2 + 2 * a * diffS)
             aveV = (self.V[sec][index] + self.V[nextSec][nextIndex]) / 2
             self.T[nextSec][nextIndex] = self.T[sec][index] + diffS / aveV
             if self.V[nextSec][nextIndex] > self.endBrakingV[nextSec][nextIndex]:
                 self.fullbreaking('endBraking')
+            elif self.brakingV[nextSec] != None and (self.V[nextSec][nextIndex] > self.brakingV[nextSec][nextIndex]):
+                self.fullbreaking('secBraking')
+            elif self.V[nextSec][nextIndex] >= self.secLimit[nextSec]:
+                return 'cruising'
             else:
-                if self.brakingV[nextSec] != None:
-                    if self.V[nextSec][nextIndex] > self.brakingV[nextSec][nextIndex]:
-                        self.fullbreaking('secBraking')
-                    else:
-                        self.now = list(nextState)
-                else:
-                    self.now = list(nextState)
+                self.now = list(nextState)
+
     def coasting(self):
         sec = self.now[0]
         index = self.now[1]
@@ -325,7 +333,33 @@ class Interstation:
                     self.now = list(nextState)
 
     def cruising(self):
-        pass
+        sec = self.now[0]
+        index = self.now[1]
+        nextState = self.next()
+        if nextState != None:
+            nextSec = nextState[0]
+            nextIndex = nextState[1]
+            W = self.totalResistanceFun(self.V[sec][index], self.S[sec][index])
+            diffS = self.S[sec][index] - self.S[nextSec][nextIndex]
+            a = (self.secLimit[nextSec]**2 - self.V[sec][index]**2) / (2. * diffS)
+            self.A[sec][index] = a
+            F = self.M * a + W
+            if F > 0:
+                self.F[sec][index] = F
+                self.usedE[nextSec][nextIndex] = self.F[sec][index] * diffS
+                self.secLeftE[nextSec] -= self.usedE[nextSec][nextIndex]
+            else:
+                self.B[sec][index] = -F
+            self.V[nextSec][nextIndex] = self.secLimit[nextSec]
+            aveV = (self.V[sec][index] + self.V[nextSec][nextIndex]) / 2.
+            self.T[nextSec][nextIndex] = self.T[sec][index] + diffS / aveV
+            if self.V[nextSec][nextIndex] > self.endBrakingV[nextSec][nextIndex]:
+                self.fullbreaking('endBraking')
+            elif self.brakingV[nextSec] != None and (self.V[nextSec][nextIndex] > self.brakingV[nextSec][nextIndex]):
+                self.fullbreaking('secBraking')
+            else:
+                self.now = list(nextState)
+                
     def fullbreaking(self, type):
         nextState = self.next()
         sec = nextState[0]
@@ -364,29 +398,37 @@ class Interstation:
                 diffS = self.S[sec][i-1] - self.S[sec][i]
                 self.T[sec][i] = self.T[sec][i-1] + diffS / aveV
             self.now = [self.secNum-1, len(self.S[-1])-1]
-                        
+
+    def ended(self):
+        if self.now == [self.secNum-1, len(self.S[-1])-1]:
+            return True
+        else:
+            return False
+
+    def secEnded(self):
+        if self.now[1] == len(self.S[self.now[0]])-1:
+            return True
+        else:
+            return False
     def generateSol(self, startSec = 0):
-        self.nowSec = startSec
-        self.nowIndex = 0
-        self.updateState()
+        self.now = [startSec, 0]
+        for i in range(self.secNum):
+            self.secLeftE[i] = self.secEnerge[i]
         for i in range(startSec, self.secNum):
-            while self.secLeftE[i] > 0:
-                status = self.fullAcce()
-                if status:
-                    break
-            if status == 'cruise':
-                while self.secLeftE[i] > 0:
-                    status = self.cruising()
-                    if status:
-                        break
-            while True:
-                if self.nowIndex == len(self.S[i]) -1:
-                    break
-                self.coasing()
+            while self.secLeftE[i] > 0.1 and (not self.secEnded()) and self.fullAcce() != 'cruising':
+                pass
+            print(self.secLeftE[i])
+            if self.fullAcce() == 'cruising':
+                while self.secLeftE[i] > 0 and (not self.secEnded()):
+                    self.cruising()
+            while not self.secEnded():
+                self.coasting()
+            if self.next() != None:
+                self.now = list(self.next())
             self.secEnerge[i] -= self.secLeftE[i]
-            self.secLeftE[i] = 0.
-            if i != self.secNum:
+            if i != self.secNum - 1:
                 self.secEnerge[i+1] += self.secLeftE[i]
+                self.secLeftE[i] = 0.
             
         
             
