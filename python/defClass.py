@@ -275,8 +275,6 @@ class Interstation:
         最大加速
         '''
         sec = self.now[0]
-        if sec == 1:
-            print("fullAcce at sec = 1")
         index = self.now[1]
         nextState = self.next()
         if nextState != None:
@@ -418,19 +416,15 @@ class Interstation:
         for i in range(self.secNum):
             self.secLeftE[i] = self.secEnerge[i]
         for i in range(startSec, self.secNum):
-            if i == 1:
-                print(self.secLeftE[i])
             while self.secLeftE[i] > 10. and (not self.secEnded()):
                 state = self.fullAcce()
                 if state == 'cruising':
                     break
-            print(self.secLeftE[i])
             if state == 'cruising':
                 while self.secLeftE[i] > 10. and (not self.secEnded()):
                     self.cruising()
             while not self.secEnded():
                 self.coasting()
-            print(self.now)
             if self.next() != None:
                 self.now = list(self.next())
             self.secEnerge[i] -= self.secLeftE[i]
