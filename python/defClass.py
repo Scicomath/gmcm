@@ -234,18 +234,21 @@ class Interstation:
             self.totalE += self.secEnerge[i]
         self.totalT = self.T[-1][-1]
 
-    def moreE(self, deltaE):
-        diffT = np.zeros(self.secNum)
-        diffE = np.zeros(self.secNum)
-        for i in range(self.secNum):
-            temp = copy.deepcopy(self)
-            temp.secEnerge[i] += deltaE
-            temp.generateSol(i) # 根据重新分配的能量求解
-            diffT[i] = self.totalT - temp.totalT
-            diffE[i] = temp.totalE - self.totalE
-        index = np.argmin(diffE/diffT)
+    def moreE(self, deltaE, index = None):
+        if index == None:
+            diffT = np.zeros(self.secNum)
+            diffE = np.zeros(self.secNum)
+            for i in range(self.secNum):
+                temp = copy.deepcopy(self)
+                temp.secEnerge[i] += deltaE
+                temp.generateSol(i) # 根据重新分配的能量求解
+                diffT[i] = self.totalT - temp.totalT
+                diffE[i] = temp.totalE - self.totalE
+            index = np.argmin(diffE/diffT)
         self.secEnerge[index] += deltaE
         self.generateSol(index)
+        print("Interstation: ","totalT =",self.totalT,", totalE =",self.totalE/3.6e6)
+        return index
     
     def next(self):
         sec = self.now[0]
@@ -439,10 +442,37 @@ class Interstation:
         self.totalT = self.T[-1][-1]
         self.totalE = np.sum(self.secEnerge)
             
+class Station:
+    def __init__(self, startNode, endNode):
+        self.startNode = startNode
+        self.endNode = endNode
+        self.num = endNode - startNode
+        self.interSta = [None]*self.num
+        for i in range(self.num):
+            self.interSta[i] = Interstation(startNode + i)
         
-            
-        
-            
+    def initSolution(self):
+        self.totalE = 0.
+        self.totalT = 0.
+        for i in range(self.num):
+            self.interSta[i].initSolution()
+            self.totalT += self.interSta[i].totalT
+            self.totalE += self.interSta[i].totalE
 
-
-        
+    def moreE(self, deltaE):
+        diffE = np.zeros(self.num)
+        diffT = np.zeros(self.num)
+        tempIndex = [None]*self.num
+        for i in range(self.num):
+            temp = copy.deepcopy(self.interSta[i])
+            tempIndex[i] = temp.moreE(deltaE)
+            diffE[i] = temp.totalE - self.interSta[i].totalE
+            diffT[i] = self.interSta[i].totalT - temp.totalT
+        index = np.argmin(diffE / diffT)
+        self.interSta[index].moreE(deltaE, tempIndex[index])
+        self.totalT = 0.
+        self.totalE = 0.
+        for i in range(self.num):
+            self.totalT += self.interSta[i].totalT
+            self.totalE += self.interSta[i].totalE
+        print("Station: ","totalT =",self.totalT,", totalE =",self.totalE/3.6e6)
