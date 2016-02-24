@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from defClass import *
 import unittest
-x = Interstation(5, 110.)
+x = Interstation(5)
 
 
 class trainTestCase(unittest.TestCase):
