@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import copy
+import matplotlib.pyplot as plt
 
 speedLimit = np.loadtxt("../data/限速数据.csv", delimiter=",")
 nodePosition = np.loadtxt("../data/站点公里标.csv", delimiter=",")
@@ -136,7 +137,7 @@ class Interstation:
         v = v * 3.6
         g = 9.8
         # 基本阻力
-        w0 = self.constA + self.constB * v + self.constC * v**2
+        w0 = self.constA + self.constB * v + self.constC * (v**2)
         # 附加阻力
         i, R = self.groundConditionFun(s)
         wi = i
@@ -145,6 +146,7 @@ class Interstation:
         else:
             wc = self.constc / R
         W = (w0 + wi + wc) * g * self.M / 1000.
+        #print(W, w0, wi, wc)
         return W
 
     def brakingCurveFun(self, index):
@@ -215,17 +217,32 @@ class Interstation:
                 self.endBrakingEreg[i][j] = self.endBrakingEreg[i][j+1] + (Emech - Ef) * 0.95
         
 
-    def initSolution(self):
+    def initSolution(self, cruisLen = 0):
+        self.now = [0, 0]
+        sec = self.now[0]
+        index = self.now[1]
         initTargetSpeed = 50. / 3.6 # 初始加速到50 km/h
-        while self.V[self.now[0]][self.now[1]] < initTargetSpeed:
+        while self.V[sec][index] < initTargetSpeed:
             self.fullAcce()
-        
+            sec = self.now[0]
+            index = self.now[1]
+
+        for i in range(cruisLen):
+            self.cruising(initTargetSpeed)
+
+        state = None
         while True:
             # 检查是否到达终点, 若到达, 则退出
             if self.now == [self.secNum-1, len(self.S[-1])-1]:
                 break
+            if state == 'stop':
+                cruisLen += 1000
+                self.initSolution(cruisLen)
+                return None
             # 若尚未到达, 则继续惰行
-            self.coasting()
+            state = self.coasting()
+            sec = self.now[0]
+            index = self.now[1]
 
         self.totalE = 0.
         for i in range(self.secNum):
@@ -234,7 +251,7 @@ class Interstation:
             self.totalE += self.secEnerge[i]
         self.totalT = self.T[-1][-1]
 
-    def moreE(self, deltaE, index = None):
+    def moreE(self, deltaE, index = None, verbose = True):
         if index == None:
             diffT = np.zeros(self.secNum)
             diffE = np.zeros(self.secNum)
@@ -247,7 +264,8 @@ class Interstation:
             index = np.argmin(diffE/diffT)
         self.secEnerge[index] += deltaE
         self.generateSol(index)
-        print("Interstation: ","totalT =",self.totalT,", totalE =",self.totalE/3.6e6)
+        if verbose:
+            print("Interstation: ","totalT =",self.totalT,", totalE =",self.totalE/3.6e6)
         return index
     
     def next(self):
@@ -314,11 +332,21 @@ class Interstation:
         if nextState != None:
             nextSec = nextState[0]
             nextIndex = nextState[1]
+            diffS = self.S[sec][index] - self.S[nextSec][nextIndex]
             W = self.totalResistanceFun(self.V[sec][index], self.S[sec][index])
             a = -W / self.M
-            self.A[nextSec][nextIndex] = a
-            diffS = self.S[sec][index] - self.S[nextSec][nextIndex]
-            self.V[nextSec][nextIndex] = np.sqrt(self.V[sec][index]**2 + 2 * a * diffS)
+            if a < -0.1:
+                a = -0.1
+                F = a * self.M + W
+                self.F[sec][index] = F
+                self.usedE[nextSec][nextIndex] = F * diffS
+                self.secLeftE[nextSec] -= self.usedE[nextSec][nextIndex]
+            self.A[sec][index] = a
+            V2 = self.V[sec][index]**2 + 2 * a * diffS
+            if V2 < 0:
+                print(self.startNode, sec, index, 'stop')
+                return 'stop'
+            self.V[nextSec][nextIndex] = np.sqrt(V2)
             aveV = (self.V[sec][index] + self.V[nextSec][nextIndex]) / 2
             self.T[nextSec][nextIndex] = self.T[sec][index] + diffS / aveV
             if self.V[nextSec][nextIndex] > self.endBrakingV[nextSec][nextIndex]:
@@ -332,7 +360,7 @@ class Interstation:
                 else:
                     self.now = list(nextState)
 
-    def cruising(self):
+    def cruising(self, cruisV = None):
         sec = self.now[0]
         index = self.now[1]
         nextState = self.next()
@@ -341,7 +369,9 @@ class Interstation:
             nextIndex = nextState[1]
             W = self.totalResistanceFun(self.V[sec][index], self.S[sec][index])
             diffS = self.S[sec][index] - self.S[nextSec][nextIndex]
-            a = (self.secLimit[nextSec]**2 - self.V[sec][index]**2) / (2. * diffS)
+            if cruisV == None:
+                cruisV = self.secLimit[nextSec]
+            a = (cruisV**2 - self.V[sec][index]**2) / (2. * diffS)
             self.A[sec][index] = a
             F = self.M * a + W
             if F > 0:
@@ -350,7 +380,7 @@ class Interstation:
                 self.secLeftE[nextSec] -= self.usedE[nextSec][nextIndex]
             else:
                 self.B[sec][index] = -F
-            self.V[nextSec][nextIndex] = self.secLimit[nextSec]
+            self.V[nextSec][nextIndex] = cruisV
             aveV = (self.V[sec][index] + self.V[nextSec][nextIndex]) / 2.
             self.T[nextSec][nextIndex] = self.T[sec][index] + diffS / aveV
             if self.V[nextSec][nextIndex] > self.endBrakingV[nextSec][nextIndex]:
@@ -441,7 +471,12 @@ class Interstation:
             self.B[i][-1] = self.B[i+1][0]
         self.totalT = self.T[-1][-1]
         self.totalE = np.sum(self.secEnerge)
-            
+
+    def plotV(self):
+        for i in range(self.secNum):
+            plt.plot(self.S[i], self.V[i]*3.6)
+        plt.gca().invert_xaxis()
+        plt.show()
 class Station:
     def __init__(self, startNode, endNode):
         self.startNode = startNode
@@ -458,6 +493,8 @@ class Station:
             self.interSta[i].initSolution()
             self.totalT += self.interSta[i].totalT
             self.totalE += self.interSta[i].totalE
+            print(i, "init over")
+        print("init over")
 
     def moreE(self, deltaE):
         diffE = np.zeros(self.num)
@@ -465,14 +502,16 @@ class Station:
         tempIndex = [None]*self.num
         for i in range(self.num):
             temp = copy.deepcopy(self.interSta[i])
-            tempIndex[i] = temp.moreE(deltaE)
+            tempIndex[i] = temp.moreE(deltaE, verbose = False)
             diffE[i] = temp.totalE - self.interSta[i].totalE
             diffT[i] = self.interSta[i].totalT - temp.totalT
         index = np.argmin(diffE / diffT)
-        self.interSta[index].moreE(deltaE, tempIndex[index])
+        self.interSta[index].moreE(deltaE, tempIndex[index], verbose = False)
         self.totalT = 0.
         self.totalE = 0.
         for i in range(self.num):
             self.totalT += self.interSta[i].totalT
             self.totalE += self.interSta[i].totalE
         print("Station: ","totalT =",self.totalT,", totalE =",self.totalE/3.6e6)
+
+
