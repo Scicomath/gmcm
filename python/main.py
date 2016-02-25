@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
-from defClass import *
+from trainopt import *
 
 # 第一问, 第一小问
 S6 = Interstation(6)
