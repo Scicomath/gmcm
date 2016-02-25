@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
-from defClass import *
+from trainopt import *
 import unittest
 x = Interstation(5)
 

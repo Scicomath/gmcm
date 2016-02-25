@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
-from defClass import *
+from trainopt import *
 
 # 第二问, 第一小问
 Sall = Station(1, 14)
