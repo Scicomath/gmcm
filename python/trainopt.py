@@ -71,6 +71,8 @@ class Interstation:
             self.usedE[i] = np.zeros(len(self.S[i]))
         
         # 区间限速制动曲线
+        self.brakingSec = []
+        self.brakingSecEreg = []
         self.brakingV = [None]*self.secNum
         self.brakingEreg = [None]*self.secNum
         self.brakingB = [None]*self.secNum
@@ -418,7 +420,8 @@ class Interstation:
                         diffS = self.S[i][j-1] - self.S[i][j]
                         self.T[i][j] = self.T[i][j-1] + diffS / aveV
             self.now = [self.secNum-1, len(self.S[-1])-1]
-
+            self.brakingSec.append([self.T[sec][index], self.T[self.now[0]][self.now[1]] ])
+            self.brakingSecEreg.append(self.endBrakingEreg[sec][index])
         if type == 'secBraking':
             for i in range(index, len(self.S[sec])):
                 self.V[sec][i] = self.brakingV[sec][i]
@@ -428,6 +431,8 @@ class Interstation:
                 diffS = self.S[sec][i-1] - self.S[sec][i]
                 self.T[sec][i] = self.T[sec][i-1] + diffS / aveV
             self.now = [self.secNum-1, len(self.S[-1])-1]
+            self.brakingSec.append([self.T[sec][index], self.T[self.now[0]][self.now[1]]])
+            self.brakingSecEreg.append(self.brakingEreg[sec][index])            
 
     def ended(self):
         if self.now == [self.secNum-1, len(self.S[-1])-1]:
@@ -441,6 +446,8 @@ class Interstation:
         else:
             return False
     def generateSol(self, startSec = 0):
+        self.brakingSec = []
+        self.brakingSecEreg = []
         self.now = [startSec, 0]
         state = None
         #for i in range(self.secNum):
@@ -514,4 +521,21 @@ class Station:
             self.totalE += self.interSta[i].totalE
         print("Station: ","totalT =",self.totalT,", totalE =",self.totalE/3.6e6)
 
+    def adjustTime(self, brakingSec, addT):
+        newBrakingSec = copy.deepcopy(brakingSec)
+        for i in range(len(brakingSec)):
+            for j in range(len(brakingSec[i])):
+                newBrakingSec[i][j] = brakingSec[i][j] + addT
+        return newBrakingSec
+        
+    def getBrakingInfo(self):
+        self.brakingSec = []
+        self.brakingSecEreg = []
+        for i in range(self.num):
+            if i == 0:
+                addT = 0.
+            else:
+                addT = self.brakingSec[-1][-1] + 35.
+            self.brakingSec += self.adjustTime(self.interSta[i].brakingSec, addT)
+            self.brakingSecEreg += self.interSta[i].brakingSecEreg
 
