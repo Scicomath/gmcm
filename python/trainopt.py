@@ -86,6 +86,7 @@ class Interstation:
         self.now = [0,0] # 状态变量, 第一个元素为区间索引, 第二个元素为区间内索引
         self.secEnerge = np.zeros(self.secNum)
         self.secLeftE = np.zeros(self.secNum)
+        self.extraE = np.zeros(self.secNum)
         self.totalE = 0.0
         self.totalT = 0.0
 
@@ -224,6 +225,7 @@ class Interstation:
         sec = self.now[0]
         index = self.now[1]
         initTargetSpeed = 50. / 3.6 # 初始加速到50 km/h
+        self.extraE = np.zeros(self.secNum)        
         while self.V[sec][index] < initTargetSpeed:
             self.fullAcce()
             sec = self.now[0]
@@ -250,7 +252,7 @@ class Interstation:
         for i in range(self.secNum):
             self.secEnerge[i] = np.sum(self.usedE[i])
             self.secLeftE[i] = self.secEnerge[i]
-            self.totalE += self.secEnerge[i]
+            self.totalE += self.secEnerge[i] + self.extraE[i]
         self.totalT = self.T[-1][-1]
 
     def moreE(self, deltaE, index = None, verbose = True):
@@ -264,6 +266,7 @@ class Interstation:
                 diffT[i] = self.totalT - temp.totalT
                 diffE[i] = temp.totalE - self.totalE
             index = np.argmin(diffE/diffT)
+        #print("index = ", index)
         self.secEnerge[index] += deltaE
         self.generateSol(index)
         if verbose:
@@ -337,12 +340,13 @@ class Interstation:
             diffS = self.S[sec][index] - self.S[nextSec][nextIndex]
             W = self.totalResistanceFun(self.V[sec][index], self.S[sec][index])
             a = -W / self.M
-            if a < -0.1:
-                a = -0.1
+            if a < -0.08:
+                a = -0.08
                 F = a * self.M + W
                 self.F[sec][index] = F
-                self.usedE[nextSec][nextIndex] = F * diffS
-                self.secLeftE[nextSec] -= self.usedE[nextSec][nextIndex]
+                self.extraE[nextSec] += F * diffS
+                #self.usedE[nextSec][nextIndex] = F * diffS
+                #self.secLeftE[nextSec] -= self.usedE[nextSec][nextIndex]
             self.A[sec][index] = a
             V2 = self.V[sec][index]**2 + 2 * a * diffS
             if V2 < 0:
@@ -403,6 +407,7 @@ class Interstation:
                         self.V[i][j] = self.endBrakingV[i][j]
                         self.B[i][j] = self.endBrakingB[i][j]
                         self.A[i][j] = self.endBrakingA[i][j]
+                        self.F[i][j] = 0.
                         aveV = (self.V[i][j] + self.V[i][j-1]) / 2.
                         diffS = self.S[i][j-1] - self.S[i][j]
                         self.T[i][j] = self.T[i][j-1] + diffS / aveV
@@ -416,6 +421,7 @@ class Interstation:
                         self.V[i][j] = self.endBrakingV[i][j]
                         self.B[i][j] = self.endBrakingB[i][j]
                         self.A[i][j] = self.endBrakingA[i][j]
+                        self.F[i][j] = 0.
                         aveV = (self.V[i][j] + self.V[i][j-1]) / 2.
                         diffS = self.S[i][j-1] - self.S[i][j]
                         self.T[i][j] = self.T[i][j-1] + diffS / aveV
@@ -427,6 +433,7 @@ class Interstation:
                 self.V[sec][i] = self.brakingV[sec][i]
                 self.B[sec][i] = self.brakingB[sec][i]
                 self.A[sec][i] = self.brakingA[sec][i]
+                self.F[sec][i] = 0.
                 aveV = (self.V[sec][i] + self.V[sec][i-1]) / 2.
                 diffS = self.S[sec][i-1] - self.S[sec][i]
                 self.T[sec][i] = self.T[sec][i-1] + diffS / aveV
@@ -445,14 +452,40 @@ class Interstation:
             return True
         else:
             return False
+    def getTractionInfo(self):
+        tractionSec = []
+        for i in range(self.secNum):
+            F1 = self.F[i][0]
+            if F1 > 0:
+                tractionSec.append([self.T[i][0], None])
+            for j in range(len(self.S[i])-1):
+                F1 = self.F[i][j]
+                F2 = self.F[i][j+1]
+                if F1 == 0 and F2 > 0:
+                    tractionSec.append([self.T[i][j+1], None])
+                elif F1 > 0 and F2 == 0:
+                    tractionSec[-1][1] = self.T[i][j]
+                else:
+                    pass
+                if tractionSec[-1][1] == None:
+                    tractionSec[-1][1] = self.T[i][-1]
+        self.tractionSec = [tractionSec[0]]
+        for i in range(1, len(tractionSec)):
+            if tractionSec[i][0] == self.tractionSec[-1][-1]:
+                self.tractionSec[-1][-1] = tractionSec[i][1]
+            else:
+                self.tractionSec.append(tractionSec[i])
+                
     def generateSol(self, startSec = 0):
         self.brakingSec = []
         self.brakingSecEreg = []
         self.now = [startSec, 0]
+        # self.extraE = np.zeros(self.secNum)
         state = None
         #for i in range(self.secNum):
         #    self.secLeftE[i] = self.secEnerge[i]
         for i in range(startSec, self.secNum):
+            self.extraE[i] = 0.
             self.secLeftE[i] = self.secEnerge[i]
             self.now[1] = 0
             while self.secLeftE[i] > 10. and (not self.secEnded()):
@@ -477,7 +510,8 @@ class Interstation:
             self.F[i][-1] = self.F[i+1][0]
             self.B[i][-1] = self.B[i+1][0]
         self.totalT = self.T[-1][-1]
-        self.totalE = np.sum(self.secEnerge)
+        self.totalE = np.sum(self.secEnerge) + np.sum(self.extraE)
+        self.getTractionInfo()
 
     def plotV(self):
         for i in range(self.secNum):
@@ -512,6 +546,7 @@ class Station:
             tempIndex[i] = temp.moreE(deltaE, verbose = False)
             diffE[i] = temp.totalE - self.interSta[i].totalE
             diffT[i] = self.interSta[i].totalT - temp.totalT
+            # print("Index ", i, "diffE =", diffE[i], "diffT =", diffT[i])
         index = np.argmin(diffE / diffT)
         self.interSta[index].moreE(deltaE, tempIndex[index], verbose = False)
         self.totalT = 0.
@@ -532,10 +567,16 @@ class Station:
         self.brakingSec = []
         self.brakingSecEreg = []
         for i in range(self.num):
-            if i == 0:
-                addT = 0.
-            else:
-                addT = self.brakingSec[-1][-1] + 35.
+            addT = 0.
+            for j in range(i):
+                addT += self.interSta[j].totalT + 35.
             self.brakingSec += self.adjustTime(self.interSta[i].brakingSec, addT)
             self.brakingSecEreg += self.interSta[i].brakingSecEreg
 
+    def getTractionInfo(self):
+        self.tractionSec = []
+        for i in range(self.num):
+            addT = 0.
+            for j in range(i):
+                addT += self.interSta[j].totalT + 35.
+            self.tractionSec += self.adjustTime(self.interSta[i].tractionSec, addT)
