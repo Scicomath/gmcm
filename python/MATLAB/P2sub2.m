@@ -1,6 +1,6 @@
-%[x,fval] = fmincon(@fun, [320,159],[],[],[],[],[0;0]);
-trainNum = [23    33    96    45    42];
-gap = [320,159,320,159,320];
+%[x,fval] = fmincon(@fun, [328.7421,149.8474],[],[],[],[],[300;120],[600;150]);
+trainNum = [22    36    94    46    41];
+gap = [328.7421,149.8474,328.7421,149.8474,328.7421];
 totalGap = [];
 for i = 1:length(trainNum)
     totalGap = [totalGap, ones(1,trainNum(i))*gap(i)];
