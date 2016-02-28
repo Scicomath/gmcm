@@ -1,0 +1,52 @@
+0  lateNodeList []
+0  lateTimeList []
+0  extraEList 3.5310685281
+------------------------------------------
+1  lateNodeList []
+1  lateTimeList []
+1  extraEList 3.41410757048
+------------------------------------------
+2  lateNodeList []
+2  lateTimeList []
+2  extraEList 3.11734609046
+------------------------------------------
+3  lateNodeList []
+3  lateTimeList []
+3  extraEList 3.0499486646
+------------------------------------------
+4  lateNodeList [5]
+4  lateTimeList [10.0]
+4  extraEList -0.407778384058
+------------------------------------------
+5  lateNodeList []
+5  lateTimeList []
+5  extraEList 3.6534005978
+------------------------------------------
+6  lateNodeList []
+6  lateTimeList []
+6  extraEList 3.75247138011
+------------------------------------------
+7  lateNodeList []
+7  lateTimeList []
+7  extraEList 3.24014602012
+------------------------------------------
+8  lateNodeList []
+8  lateTimeList []
+8  extraEList 3.72698784084
+------------------------------------------
+9  lateNodeList []
+9  lateTimeList []
+9  extraEList 3.35342952224
+------------------------------------------
+10  lateNodeList []
+10  lateTimeList []
+10  extraEList 2.96792360518
+------------------------------------------
+11  lateNodeList []
+11  lateTimeList []
+11  extraEList 3.46121954293
+------------------------------------------
+12  lateNodeList [13]
+12  lateTimeList [9.4015768623336839]
+12  extraEList 8.9921333982
+------------------------------------------
