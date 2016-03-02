@@ -1,5 +1,6 @@
-gaObjFun = @(stopTime)totalEregFun(stopTime, [63900/99,63900/99*2, 63900/99*3],...
-    [99, 98, 97], tractionSec, brakingSec, brakingSecEreg, tractionIndex, brakingIndex);
+H = ones(1,99)*(63900/99);
+gaObjFun = @(stopTime)totalEregFun(stopTime, H, tractionSec,...
+    brakingSec, brakingSecEreg, tractionIndex, brakingIndex);
 Aeq = ones(1,12);
 beq = 420;
 LB = 30*ones(1,12);
