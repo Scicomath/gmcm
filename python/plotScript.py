@@ -18,13 +18,13 @@ f.close()
 
 def plotV(Sall):
     params = {
-        'axes.labelsize': 12,
-        'font.size': 12,
-        'legend.fontsize': 12,
-        'xtick.labelsize': 12,
-        'ytick.labelsize': 12,
+        'axes.labelsize': 10,
+        'font.size': 10,
+        'legend.fontsize': 10,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
         'text.usetex': False,
-        'figure.figsize': [4.5, 4.5],
+        'figure.figsize': [3.8, 3.8],
     }
     rcParams.update(params)
     for i in range(Sall.secNum):
@@ -39,7 +39,7 @@ def plotV(Sall):
     h1._label = "速度曲线"
     h2._label = "速度限制"
     legend(loc='upper right')
-    savefig("S6.eps", dpi=600)
+    savefig("S6.pdf", dpi=600)
     show()
 
 def plotAllV(Sall, name, figsize):
@@ -58,10 +58,10 @@ def plotAllV(Sall, name, figsize):
     h1._label = "速度曲线"
     h2._label = "速度限制"
     legend()
-    savefig(name+".eps", dpi=600)
+    savefig(name+".pdf", dpi=600)
     show()
     
 plotV(S6)
-plotAllV(S67, "S67", [4.5, 4.5])
-plotAllV(Sall, "Sall", [6, 4.5])
+plotAllV(S67, "S67", [3.8, 3.8])
+plotAllV(Sall, "Sall", [5, 4])
 
